@@ -22,3 +22,27 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+
+# environment file
+.env
+
+# docker volume
+/postgres
+
+
+# Target directory
+target/
+
+# Sensitive or high-churn files
+*.key
+*.pem
+*.p12
+*.jks
+*.pub
+
+# IDE files
+*.iml
+*.ipr
+*.iws
+.idea/
