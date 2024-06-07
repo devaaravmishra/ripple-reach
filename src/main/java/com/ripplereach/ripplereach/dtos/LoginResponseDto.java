@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginResponseDto {
-    private String message;
-    private User user;
-    private AuthResponseDto auth;
+  private String message;
+  private User user;
+  private AuthResponseDto auth;
 }

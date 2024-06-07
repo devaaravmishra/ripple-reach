@@ -18,44 +18,47 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
-    private final UserMapper userMapper;
+  private final AuthService authService;
+  private final UserMapper userMapper;
 
-    @PostMapping("/register")
-    public ResponseEntity<RegisterResponseDto> register(@Valid @RequestBody RegisterRequestDto registerRequestDto) {
-        User userRequestEntity = userMapper.mapToUser(registerRequestDto);
+  @PostMapping("/register")
+  public ResponseEntity<RegisterResponseDto> register(
+      @Valid @RequestBody RegisterRequestDto registerRequestDto) {
+    User userRequestEntity = userMapper.mapToUser(registerRequestDto);
 
-        User userResponseEntity = authService.register(userRequestEntity);
-        AuthResponseDto authResponseDto = authService.generateAuthenticationToken(userResponseEntity);
+    User userResponseEntity = authService.register(userRequestEntity);
+    AuthResponseDto authResponseDto = authService.generateAuthenticationToken(userResponseEntity);
 
-        RegisterResponseDto registerResponseDto = RegisterResponseDto
-                .builder()
-                .message("User created successfully")
-                .user(userResponseEntity)
-                .auth(authResponseDto)
-                .build();
+    RegisterResponseDto registerResponseDto =
+        RegisterResponseDto.builder()
+            .message("User created successfully")
+            .user(userResponseEntity)
+            .auth(authResponseDto)
+            .build();
 
-        return new ResponseEntity<>(registerResponseDto, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(registerResponseDto, HttpStatus.OK);
+  }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
-        LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
+  @PostMapping("/login")
+  public ResponseEntity<LoginResponseDto> login(
+      @Valid @RequestBody LoginRequestDto loginRequestDto) {
+    LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
 
-        return new ResponseEntity<>(loginResponseDto, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(loginResponseDto, HttpStatus.OK);
+  }
 
-    @PostMapping("/refresh/token")
-    public ResponseEntity<AuthResponseDto> refreshTokens(@Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
-        AuthResponseDto authResponseDto = authService.refreshToken(refreshTokenRequest);
+  @PostMapping("/refresh/token")
+  public ResponseEntity<AuthResponseDto> refreshTokens(
+      @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
+    AuthResponseDto authResponseDto = authService.refreshToken(refreshTokenRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).body(authResponseDto);
-    }
+    return ResponseEntity.status(HttpStatus.OK).body(authResponseDto);
+  }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(@Valid @RequestBody LogoutRequestDto logoutRequestDto) {
-        authService.logout(logoutRequestDto);
+  @PostMapping("/logout")
+  public ResponseEntity<String> logout(@Valid @RequestBody LogoutRequestDto logoutRequestDto) {
+    authService.logout(logoutRequestDto);
 
-        return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully!!");
-    }
+    return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully!!");
+  }
 }

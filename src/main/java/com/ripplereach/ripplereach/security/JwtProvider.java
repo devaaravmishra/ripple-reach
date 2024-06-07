@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.security;
 
+import java.time.Instant;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,32 +11,31 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-
 @Service
 @RequiredArgsConstructor
 public class JwtProvider {
 
-    private final JwtEncoder jwtEncoder;
-    @Getter
-    @Value("${jwt.expiration.time}")
-    private Long jwtExpirationInMillis;
+  private final JwtEncoder jwtEncoder;
 
-    public String generateToken(Authentication authentication) {
-        User principal = (User) authentication.getPrincipal();
-        return generateTokenWithUserName(principal.getUsername());
-    }
+  @Getter
+  @Value("${jwt.expiration.time}")
+  private Long jwtExpirationInMillis;
 
-    public String generateTokenWithUserName(String username) {
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("self")
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusMillis(jwtExpirationInMillis))
-                .subject(username)
-                .claim("scope", "ROLE_USER")
-                .build();
+  public String generateToken(Authentication authentication) {
+    User principal = (User) authentication.getPrincipal();
+    return generateTokenWithUserName(principal.getUsername());
+  }
 
-        return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-    }
+  public String generateTokenWithUserName(String username) {
+    JwtClaimsSet claims =
+        JwtClaimsSet.builder()
+            .issuer("self")
+            .issuedAt(Instant.now())
+            .expiresAt(Instant.now().plusMillis(jwtExpirationInMillis))
+            .subject(username)
+            .claim("scope", "ROLE_USER")
+            .build();
 
+    return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+  }
 }

@@ -1,9 +1,8 @@
 package com.ripplereach.ripplereach.models;
 
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.Instant;
+import lombok.*;
 
 @Entity
 @AllArgsConstructor
@@ -12,13 +11,13 @@ import java.time.Instant;
 @Getter
 @Setter
 public class University {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String name;
+  @Column(unique = true, nullable = false)
+  private String name;
 
-    private Instant createdAt;
-    private Instant updatedAt;
+  private Instant createdAt;
+  private Instant updatedAt;
 }

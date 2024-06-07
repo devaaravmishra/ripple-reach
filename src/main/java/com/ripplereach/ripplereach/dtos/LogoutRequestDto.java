@@ -11,7 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LogoutRequestDto {
-    @NotBlank(message = "Refresh token is required")
-    private String refreshToken;
-    private String username;
+  @NotBlank(message = "Refresh token is required")
+  private String refreshToken;
+
+  private String username;
 }

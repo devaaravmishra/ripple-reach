@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Import;
 @SpringBootApplication
 @Import(OpenAPIConfiguration.class)
 public class RippleReachApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(RippleReachApplication.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(RippleReachApplication.class, args);
+  }
 }
