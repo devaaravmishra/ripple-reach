@@ -25,9 +25,9 @@ replay_pid*
 
 
 # environment file
-.env
-.env.local
 .env.development
+.env.local
+.env.staging
 .env.test
 .env.production
 
@@ -44,9 +44,14 @@ target/
 *.p12
 *.jks
 *.pub
+google-services.json
 
 # IDE files
 *.iml
 *.ipr
 *.iws
 .idea/
+
+
+# Misc
+.DS_Store
