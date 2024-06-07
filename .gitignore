@@ -26,6 +26,10 @@ replay_pid*
 
 # environment file
 .env
+.env.local
+.env.development
+.env.test
+.env.production
 
 # docker volume
 /postgres
