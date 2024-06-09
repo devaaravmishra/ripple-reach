@@ -86,23 +86,27 @@
 		<dependency>
 			<groupId>com.google.firebase</groupId>
 			<artifactId>firebase-admin</artifactId>
-			<version>7.1.0</version>
+			<version>9.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.0.2</version>
+			<version>2.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
-			<version>2.0.2</version>
+			<version>2.5.0</version>
 		</dependency>
 		<!-- For Displaying time as Relative Time Ago ("Posted 1 Day ago")-->
 		<dependency>
 			<groupId>com.github.marlonlom</groupId>
 			<artifactId>timeago</artifactId>
 			<version>4.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.modelmapper</groupId>

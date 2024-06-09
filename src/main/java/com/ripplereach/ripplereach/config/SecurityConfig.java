@@ -56,14 +56,20 @@ public class SecurityConfig {
                 authorize
                     .requestMatchers("/api/auth/**")
                     .permitAll()
+                        .requestMatchers("/actuator/**")
+                        .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/users/generate-usernames")
                     .permitAll()
                     .requestMatchers(
-                        "/v2/api-docs",
+                        "/v3/api-docs",
+                        "/swagger-ui/index.html",
+                        "/swagger-ui/**",
+                        "/swagger-config/**",
+                        "/api-docs",
+                        "/api-docs/**",
                         "/configuration/ui",
                         "/swagger-resources/**",
                         "/configuration/security",
-                        "/swagger-ui.html",
                         "/webjars/**")
                     .permitAll()
                     .anyRequest()
