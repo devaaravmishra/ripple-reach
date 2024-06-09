@@ -6,10 +6,10 @@ import jakarta.persistence.EntityNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.MethodNotSupportedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -93,6 +93,19 @@ public class GlobalExceptionHandler {
             .build();
 
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(AccessDeniedException ex) {
+    ErrorResponseDto errorResponseDto = ErrorResponseDto
+            .builder()
+            .status(HttpStatus.FORBIDDEN.value())
+            .type(String.valueOf(HttpStatus.FORBIDDEN))
+            .title("Forbidden, Access denied!")
+            .message(ex.getMessage())
+            .build();
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponseDto);
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
