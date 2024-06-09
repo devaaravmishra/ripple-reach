@@ -13,4 +13,6 @@ public interface AuthService {
   AuthResponseDto generateAuthenticationToken(User user);
 
   AuthResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequestDto);
+
+  String verifyIdToken(String idToken);
 }

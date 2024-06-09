@@ -2,21 +2,15 @@ package com.ripplereach.ripplereach.services.impl;
 
 import com.ripplereach.ripplereach.dtos.*;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
-import com.ripplereach.ripplereach.models.Company;
 import com.ripplereach.ripplereach.models.RefreshToken;
-import com.ripplereach.ripplereach.models.University;
 import com.ripplereach.ripplereach.models.User;
-import com.ripplereach.ripplereach.repositories.CompanyRepository;
-import com.ripplereach.ripplereach.repositories.UniversityRepository;
-import com.ripplereach.ripplereach.repositories.UserRepository;
 import com.ripplereach.ripplereach.security.JwtProvider;
 import com.ripplereach.ripplereach.services.AuthService;
 import com.ripplereach.ripplereach.services.RefreshTokenService;
-import com.ripplereach.ripplereach.utilities.HashUtils;
+import com.ripplereach.ripplereach.services.UserService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
-import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -31,64 +25,16 @@ import org.springframework.transaction.annotation.Transactional;
 @AllArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-  private final UserRepository userRepository;
-  private final CompanyRepository companyRepository;
-  private final UniversityRepository universityRepository;
+  private final UserService userService;
   private final RefreshTokenService refreshTokenService;
+  private final FirebaseAuthServiceImpl firebaseAuthService;
   private final JwtProvider jwtProvider;
 
-  @Transactional
   @Override
+  @Transactional
   public User register(User user) {
     try {
-      String oneWayPhoneHex = HashUtils.generateHash(user.getPhone());
-
-      // Check if this user already exists or not
-      Optional<User> existingUser =
-          userRepository
-              .findUserByPhone(oneWayPhoneHex)
-              .or(() -> userRepository.findUserByUsername(user.getUsername()));
-
-      if (existingUser.isPresent()) {
-        log.info("User with phone ${} already exists", oneWayPhoneHex);
-        throw new EntityExistsException("User with these credentials already exists");
-      }
-
-      // Now check whether the user idToken is a valid Firebase IdToken (This means this user is
-      // verified)
-      //
-      //
-
-      user.setPhone(oneWayPhoneHex);
-
-      if (user.getCompany() != null) {
-        Optional<Company> company = companyRepository.findByName(user.getCompany().getName());
-
-        company.ifPresent(user::setCompany);
-
-        if (company.isEmpty()) {
-          user.getCompany().setCreatedAt(Instant.now());
-          companyRepository.save(user.getCompany());
-        }
-
-        // Set the user's profession if he/she is working somewhere
-        user.setProfession(user.getProfession());
-      } else if (user.getUniversity().getName() != null) {
-        Optional<University> university =
-            universityRepository.findByName(user.getUniversity().getName());
-
-        university.ifPresent(user::setUniversity);
-
-        if (university.isEmpty()) {
-          user.getUniversity().setCreatedAt(Instant.now());
-          universityRepository.save(user.getUniversity());
-        }
-      }
-
-      user.setIsVerified(false);
-      user.setCreatedAt(Instant.now());
-
-      return userRepository.save(user);
+      return userService.create(user);
     } catch (EntityExistsException ex) {
       throw ex;
     } catch (RuntimeException ex) {
@@ -101,26 +47,14 @@ public class AuthServiceImpl implements AuthService {
   @Transactional
   public LoginResponseDto login(LoginRequestDto loginRequestDto) {
     try {
-      // Turn the phone number into one way hash
-      String oneWayPhoneHex = HashUtils.generateHash(loginRequestDto.getPhone());
-
-      // find whether we have user with these credentials
-      Optional<User> userOptional = userRepository.findUserByPhone(oneWayPhoneHex);
-
-      if (userOptional.isEmpty()) {
-        log.info("User with these credentials does not exists!");
-        throw new EntityNotFoundException("User with these credentials does not exists!");
-      }
-
-      AuthResponseDto authResponseDto = generateAuthenticationToken(userOptional.get());
+      User userEntity = userService.findByPhone(loginRequestDto.getPhone());
+      AuthResponseDto authResponseDto = generateAuthenticationToken(userEntity);
 
       return LoginResponseDto.builder()
           .message("Success")
-          .user(userOptional.get())
+          .user(userEntity)
           .auth(authResponseDto)
           .build();
-    } catch (EntityNotFoundException ex) {
-      throw ex;
     } catch (RuntimeException ex) {
       log.error("Error while authenticating user");
       throw new RippleReachException("Error while authenticating user");
@@ -134,6 +68,12 @@ public class AuthServiceImpl implements AuthService {
             .findByToken(logoutRequestDto.getRefreshToken());
 
     refreshTokenService.deleteRefreshToken(refreshToken.getToken());
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public String verifyIdToken(String idToken) {
+    return firebaseAuthService.verifyIdToken(idToken);
   }
 
   @Override

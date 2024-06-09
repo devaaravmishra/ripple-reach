@@ -22,6 +22,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   private final RefreshTokenRepository refreshTokenRepository;
 
   @Override
+  @Transactional
   public RefreshToken generateRefreshToken() {
     try {
       RefreshToken refreshToken = new RefreshToken();
@@ -36,6 +37,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public void validateRefreshToken(String token) {
     try {
       refreshTokenRepository
@@ -50,6 +52,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public RefreshToken findByToken(String token) {
     try {
       Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByToken(token);
@@ -65,6 +68,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   }
 
   @Override
+  @Transactional
   public void deleteRefreshToken(String token) {
     try {
       refreshTokenRepository.deleteByToken(token);
