@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.dtos;
 
+import com.ripplereach.ripplereach.constants.Messages;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RefreshTokenRequestDto {
-  @NotBlank(message = "Refresh token is required")
+  @NotBlank(message = Messages.REFRESH_TOKEN_REQUIRED)
   private String refreshToken;
 
   private String username;

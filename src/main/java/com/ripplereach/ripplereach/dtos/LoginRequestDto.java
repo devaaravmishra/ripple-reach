@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.dtos;
 
+import com.ripplereach.ripplereach.constants.Messages;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -11,11 +12,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginRequestDto {
-  @NotBlank(message = "ID token is required")
+  @NotBlank(message = Messages.ID_TOKEN_REQUIRED)
   private String idToken;
 
-  @NotBlank(message = "Phone number is required")
-  @Pattern(regexp = "\\d{10}", message = "Phone number must be digits only")
-  @Size(message = "Invalid phone number", max = 10, min = 10)
+  @NotBlank(message = Messages.PHONE_REQUIRED)
+  @Pattern(regexp = "\\d{10}", message = Messages.VALID_PHONE)
+  @Size(message = Messages.INVALID_PHONE, max = 10, min = 10)
   private String phone;
 }

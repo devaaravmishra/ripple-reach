@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.controllers;
 
+import com.ripplereach.ripplereach.constants.Messages;
 import com.ripplereach.ripplereach.dtos.UserPartialUpdateRequestDto;
 import com.ripplereach.ripplereach.dtos.UserResponseDto;
 import com.ripplereach.ripplereach.dtos.UserUpdateRequestDto;
@@ -70,7 +71,7 @@ public class UserController {
   public ResponseEntity<String> deleteUserByPhone(@PathVariable String phone) {
     userService.deleteByPhone(phone);
 
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted successfully!");
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Messages.USER_DELETED_SUCCESSFULLY);
   }
 
   @DeleteMapping("/{username}")
@@ -78,7 +79,7 @@ public class UserController {
   public ResponseEntity<String> deleteUserByUsername(@PathVariable String username) {
     userService.deleteByUsername(username);
 
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted successfully!");
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Messages.USER_DELETED_SUCCESSFULLY);
   }
 
   @DeleteMapping("/{userId}")
@@ -86,6 +87,6 @@ public class UserController {
   public ResponseEntity<String> deleteUserById(@PathVariable Long userId) {
     userService.deleteByUserId(userId);
 
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted successfully!");
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Messages.USER_DELETED_SUCCESSFULLY);
   }
 }

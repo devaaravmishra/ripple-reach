@@ -2,6 +2,7 @@ package com.ripplereach.ripplereach.dtos;
 
 import com.ripplereach.ripplereach.annotations.CompanyAndProfession;
 import com.ripplereach.ripplereach.annotations.UniversityOrCompany;
+import com.ripplereach.ripplereach.constants.Messages;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -13,23 +14,23 @@ import lombok.*;
 @CompanyAndProfession
 @NoArgsConstructor
 public class RegisterRequestDto {
-  @NotBlank(message = "ID token is required")
+  @NotBlank(message = Messages.ID_TOKEN_REQUIRED)
   private String idToken;
 
-  @NotBlank(message = "Username is required")
+  @NotBlank(message = Messages.USERNAME_REQUIRED)
   private String username;
 
-  @NotBlank(message = "Phone is required")
-  @Pattern(regexp = "\\d{10}", message = "Phone number must be digits only")
-  @Size(message = "Invalid phone number", max = 10, min = 10)
+  @NotBlank(message = Messages.PHONE_REQUIRED)
+  @Pattern(regexp = "\\d{10}", message = Messages.VALID_PHONE)
+  @Size(message = Messages.INVALID_PHONE, max = 10, min = 10)
   private String phone;
 
-  @Size(message = "Company length must be between 3 to 50 characters", min = 3, max = 50)
+  @Size(message = Messages.COMPANY_SIZE, min = 3, max = 50)
   private String company;
 
-  @Size(message = "University length must be between 3 to 50 characters", min = 3, max = 50)
+  @Size(message = Messages.UNIVERSITY_SIZE, min = 3, max = 50)
   private String university;
 
-  @Size(message = "Profession length must be between 3 to 25 characters", min = 3, max = 25)
+  @Size(message = Messages.PROFESSION_SIZE, min = 3, max = 25)
   private String profession;
 }

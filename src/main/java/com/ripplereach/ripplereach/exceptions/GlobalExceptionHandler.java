@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.exceptions;
 
+import com.ripplereach.ripplereach.constants.Messages;
 import com.ripplereach.ripplereach.dtos.ErrorResponseDto;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,7 +26,6 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponseDto> handleValidationExceptions(
       MethodArgumentNotValidException ex) {
     Map<String, String> errors = new HashMap<>();
-    System.out.println("ERROR WHILE CREATING ERRORS: " + ex.getBindingResult().getAllErrors());
     ex.getBindingResult()
         .getAllErrors()
         .forEach(
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
         ErrorResponseDto.builder()
             .status(HttpStatus.BAD_REQUEST.value())
             .type(String.valueOf(HttpStatus.BAD_REQUEST))
-            .message("Validation failed")
+            .message(Messages.VALIDATION_FAILED)
             .errors(errors)
             .build();
 
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
         ErrorResponseDto.builder()
             .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
             .type(String.valueOf(HttpStatus.UNPROCESSABLE_ENTITY))
-            .title("Unprocessable entity")
+            .title(Messages.UNPROCESSABLE_ENTITY)
             .message(ex.getMessage())
             .build();
 
@@ -74,7 +74,7 @@ public class GlobalExceptionHandler {
         ErrorResponseDto.builder()
             .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
             .type(String.valueOf(HttpStatus.UNPROCESSABLE_ENTITY))
-            .title("Unprocessable entity")
+            .title(Messages.UNPROCESSABLE_ENTITY)
             .message(ex.getMessage())
             .build();
 
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
         ErrorResponseDto.builder()
             .status(HttpStatus.NOT_FOUND.value())
             .type(String.valueOf(HttpStatus.NOT_FOUND))
-            .title("Entity not found!")
+            .title(Messages.ENTITY_NOT_FOUND)
             .message(ex.getMessage())
             .build();
 
@@ -101,7 +101,7 @@ public class GlobalExceptionHandler {
             .builder()
             .status(HttpStatus.FORBIDDEN.value())
             .type(String.valueOf(HttpStatus.FORBIDDEN))
-            .title("Forbidden, Access denied!")
+            .title(Messages.FORBIDDEN_ACCESS_DENIED)
             .message(ex.getMessage())
             .build();
 
@@ -114,7 +114,7 @@ public class GlobalExceptionHandler {
             .builder()
             .status(HttpStatus.METHOD_NOT_ALLOWED.value())
             .type(String.valueOf(HttpStatus.METHOD_NOT_ALLOWED))
-            .title("Method not allowed")
+            .title(Messages.METHOD_NOT_ALLOWED)
             .message(ex.getMessage())
             .build();
 
@@ -127,7 +127,7 @@ public class GlobalExceptionHandler {
         ErrorResponseDto.builder()
             .status(HttpStatus.CONFLICT.value())
             .type(String.valueOf(HttpStatus.CONFLICT))
-            .title("Entity already exists!")
+            .title(Messages.ENTITY_ALREADY_EXISTS)
             .message(ex.getMessage())
             .build();
 
@@ -140,7 +140,7 @@ public class GlobalExceptionHandler {
         ErrorResponseDto.builder()
             .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
             .type(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR))
-            .title("An unexpected error occurred")
+            .title(Messages.UNEXPECTED_ERROR)
             .message(ex.getMessage())
             .build();
 

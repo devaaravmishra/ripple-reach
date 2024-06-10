@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.dtos;
 
+import com.ripplereach.ripplereach.constants.Messages;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NotificationRequestDto {
-    @NotBlank(message = "Device token is required.")
+    @NotBlank(message = Messages.DEVICE_TOKEN_REQUIRED)
     private String deviceToken;
 
-    @NotBlank(message = "Title is required.")
+    @NotBlank(message = Messages.TITLE_REQUIRED)
     private String title;
 
-    @NotBlank(message = "Body is required.")
+    @NotBlank(message = Messages.BODY_REQUIRED)
     private String body;
 }
