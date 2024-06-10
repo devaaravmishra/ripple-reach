@@ -9,5 +9,10 @@
       "name": "application.description",
       "type": "java.lang.String",
       "description": "Project description."
+    },
+    {
+      "name": "firebase.admin.sdk.json.path",
+      "type": "java.lang.String",
+      "description": "Path for firebase service account key"
     }
   ] }

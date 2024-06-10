@@ -251,6 +251,14 @@
 					<to>
 						<image>registry.hub.docker.com/aaaravv/${project.artifactId}:${project.version}</image>
 					</to>
+					<extraDirectories>
+						<paths>
+							<path>
+								<from>${project.basedir}/src/main/resources</from>
+								<into>/</into>
+							</path>
+						</paths>
+					</extraDirectories>
 				</configuration>
 				<executions>
 					<execution>
