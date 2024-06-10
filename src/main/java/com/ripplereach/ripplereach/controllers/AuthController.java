@@ -1,9 +1,11 @@
 package com.ripplereach.ripplereach.controllers;
 
+import com.ripplereach.ripplereach.constants.Messages;
 import com.ripplereach.ripplereach.dtos.*;
 import com.ripplereach.ripplereach.mappers.UserMapper;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.services.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,6 +27,7 @@ public class AuthController {
   private final UserMapper userMapper;
 
   @PostMapping("/register")
+  @Operation(description = "API which let user create a fresh account if they didn't have one before.")
   public ResponseEntity<RegisterResponseDto> register(
       @Valid @RequestBody RegisterRequestDto registerRequestDto) {
     authService.verifyIdToken(registerRequestDto.getIdToken());
@@ -35,7 +38,7 @@ public class AuthController {
 
     RegisterResponseDto registerResponseDto =
         RegisterResponseDto.builder()
-            .message("User created successfully")
+            .message(Messages.USER_CREATED_SUCCESSFULLY)
             .user(userResponseEntity)
             .auth(authResponseDto)
             .build();
@@ -54,6 +57,7 @@ public class AuthController {
 
   @PostMapping("/refresh/token")
   @SecurityRequirement(name = "Bearer Authentication")
+  @Operation(description = "API which generates new auth token with the help of refresh token.")
   public ResponseEntity<AuthResponseDto> refreshTokens(
       @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
     AuthResponseDto authResponseDto = authService.refreshToken(refreshTokenRequest);
@@ -63,9 +67,10 @@ public class AuthController {
 
   @PostMapping("/logout")
   @SecurityRequirement(name = "Bearer Authentication")
+  @Operation(description = "API which let users log out of their current session by invalidating their auth tokens.")
   public ResponseEntity<String> logout(@Valid @RequestBody LogoutRequestDto logoutRequestDto) {
     authService.logout(logoutRequestDto);
 
-    return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully!!");
+    return ResponseEntity.status(HttpStatus.OK).body(Messages.LOGGED_OUT_SUCCESSFULLY);
   }
 }
