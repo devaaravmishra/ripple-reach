@@ -1,1 +1,13 @@
-{ "properties": [ ] }
+{
+  "properties": [
+    {
+      "name": "application.version",
+      "type": "java.lang.String",
+      "description": "Project version."
+    },
+    {
+      "name": "application.description",
+      "type": "java.lang.String",
+      "description": "Project description."
+    }
+  ] }
