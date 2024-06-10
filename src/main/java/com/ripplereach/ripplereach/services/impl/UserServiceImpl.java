@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
                             .or(() -> userRepository.findUserByUsername(user.getUsername()));
 
             if (existingUser.isPresent()) {
-                log.info("User with phone {} already exists", oneWayPhoneHex);
+                log.error("User with phone {} or username {} already exists", oneWayPhoneHex, user.getUsername());
                 throw new EntityExistsException("User with these credentials already exists");
             }
 
@@ -118,7 +118,14 @@ public class UserServiceImpl implements UserService {
             user.setIsVerified(false);
             user.setCreatedAt(Instant.now());
 
-            return userRepository.save(user);
+            User userEntity = userRepository.save(user);
+
+            log.info("User with id {}, username {} is created successfully.",
+                    userEntity.getUserId(),
+                    userEntity.getUsername()
+            );
+
+            return userEntity;
         } catch (RuntimeException ex) {
             log.error("Error while saving user with username: {}!", user.getUsername());
             throw new RippleReachException("Error while saving user!");
@@ -149,7 +156,9 @@ public class UserServiceImpl implements UserService {
             }
 
             userEntity.get().setDeletedAt(Instant.now());
-            userRepository.save(userEntity.get());
+            User deletedUser = userRepository.save(userEntity.get());
+
+            log.info("User with userId {}, username {} is soft deleted.", deletedUser.getUserId(), deletedUser.getUsername());
         } catch (RuntimeException ex) {
             log.error("Error while deleting user with username {}", username);
             throw new RippleReachException("Error while deleting user!");
@@ -168,7 +177,9 @@ public class UserServiceImpl implements UserService {
             }
 
             userEntity.get().setDeletedAt(Instant.now());
-            userRepository.save(userEntity.get());
+            User deletedUser = userRepository.save(userEntity.get());
+
+            log.info("User with userId {}, username {} is soft deleted.", deletedUser.getUserId(), deletedUser.getUsername());
         } catch (RuntimeException ex) {
             log.error("Error while deleting user with userId: {}", userId, ex);
             throw new RippleReachException("Error while deleting user!");
@@ -189,7 +200,9 @@ public class UserServiceImpl implements UserService {
             }
 
             userEntity.get().setDeletedAt(Instant.now());
-            userRepository.save(userEntity.get());
+            User deletedUser = userRepository.save(userEntity.get());
+
+            log.info("User with userId {}, username {} is soft deleted.", deletedUser.getUserId(), deletedUser.getUsername());
         } catch (RuntimeException ex) {
             log.error("Error while deleting user with phone: {}", oneWayPhoneHex, ex);
             throw new RippleReachException("Error while deleting user!");
@@ -240,7 +253,14 @@ public class UserServiceImpl implements UserService {
 
             existingUser.setUpdatedAt(Instant.now());
 
-            return userRepository.save(existingUser);
+            User updatedUser = userRepository.save(existingUser);
+
+            log.info("User with id {}, username {} is updated successfully.",
+                    updatedUser.getUserId(),
+                    updatedUser.getUsername()
+            );
+
+            return updatedUser;
         } catch (EntityNotFoundException | HttpClientErrorException ex) {
             throw ex;
         } catch (RuntimeException ex) {
