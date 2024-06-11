@@ -21,6 +21,7 @@ public class UserResponseDto {
     private Company company;
     private String profession;
     private Boolean isVerified;
+    private String avatar;
     private Instant createdAt;
     private Instant updatedAt;
     private Instant deletedAt;

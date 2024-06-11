@@ -58,6 +58,10 @@ public class SecurityConfig {
                     .permitAll()
                         .requestMatchers("/actuator/**")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/generate-avatar")
+                        .permitAll()
+                        .requestMatchers("/avatars/**")
+                        .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/users/generate-usernames")
                     .permitAll()
                     .requestMatchers(

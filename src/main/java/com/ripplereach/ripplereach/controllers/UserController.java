@@ -8,9 +8,11 @@ import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.mappers.UserMapper;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.services.UserService;
+import com.ripplereach.ripplereach.utilities.AvatarGenerator;
 import com.ripplereach.ripplereach.utilities.UsernameGenerator;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,10 +31,18 @@ public class UserController {
   private final Mapper<User, UserResponseDto> userResponseMapper;
 
   @GetMapping("/generate-usernames")
+  @Operation(description = "Generate a list of random usernames.")
   public ResponseEntity<List<String>> generateUsernames(
       @RequestParam(defaultValue = "10") int count) {
     List<String> usernames = UsernameGenerator.generateUsernames(count);
     return ResponseEntity.ok(usernames);
+  }
+
+  @GetMapping("/generate-avatar")
+  @Operation(description = "Generates a random avatar.")
+  public ResponseEntity<String> generateAvatar() {
+    String avatar = AvatarGenerator.generateRandomAvatar();
+    return ResponseEntity.ok(avatar);
   }
 
   @GetMapping("/{username}")

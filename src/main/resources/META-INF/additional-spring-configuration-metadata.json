@@ -13,6 +13,12 @@
     {
       "name": "firebase.admin.sdk.json.path",
       "type": "java.lang.String",
-      "description": "Path for firebase service account key"
+      "description": "Path for firebase service account key."
+    },
+    {
+      "name": "static.resource.url",
+      "type": "java.lang.String",
+      "description": "Url to serve static resources."
     }
-  ] }
+  ]
+}

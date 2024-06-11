@@ -8,6 +8,7 @@ import com.ripplereach.ripplereach.repositories.UserRepository;
 import com.ripplereach.ripplereach.services.CompanyService;
 import com.ripplereach.ripplereach.services.UniversityService;
 import com.ripplereach.ripplereach.services.UserService;
+import com.ripplereach.ripplereach.utilities.AvatarGenerator;
 import com.ripplereach.ripplereach.utilities.HashUtils;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -116,7 +117,9 @@ public class UserServiceImpl implements UserService {
             }
 
             user.setIsVerified(false);
-            user.setCreatedAt(Instant.now());
+
+            String avatar = AvatarGenerator.generateRandomAvatar();
+            user.setAvatar(avatar);
 
             User userEntity = userRepository.save(user);
 
@@ -250,8 +253,6 @@ public class UserServiceImpl implements UserService {
             if (isProfessionPresent) {
                 existingUser.setProfession(user.getProfession());
             }
-
-            existingUser.setUpdatedAt(Instant.now());
 
             User updatedUser = userRepository.save(existingUser);
 
