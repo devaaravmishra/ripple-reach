@@ -1,9 +1,7 @@
 package com.ripplereach.ripplereach.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,5 +19,12 @@ public class RefreshToken {
   private Long id;
 
   private String token;
-  private Instant createdDate;
+
+  @Column(nullable = false, updatable = false)
+  private Instant createdAt;
+
+  @PrePersist
+  protected void onCreate() {
+    createdAt = Instant.now();
+  }
 }

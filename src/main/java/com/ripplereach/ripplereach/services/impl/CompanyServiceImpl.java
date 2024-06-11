@@ -33,7 +33,6 @@ public class CompanyServiceImpl implements CompanyService {
             Company company = Company
                     .builder()
                     .name(companyName)
-                    .createdAt(Instant.now())
                     .build();
 
             log.info("Successfully created company with name {}", companyName);

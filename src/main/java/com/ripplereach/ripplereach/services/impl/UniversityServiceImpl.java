@@ -33,7 +33,6 @@ public class UniversityServiceImpl implements UniversityService {
            University university = University
                    .builder()
                    .name(universityName)
-                   .createdAt(Instant.now())
                    .build();
 
            log.info("Successfully created university with name {}", universityName);

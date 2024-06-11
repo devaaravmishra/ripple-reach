@@ -31,9 +31,28 @@ public class User {
   private Company company;
 
   private String profession;
+
   private Boolean isVerified;
 
+  private String avatar;
+
+  @Column(nullable = false, updatable = false)
   private Instant createdAt;
+
+  @Column(nullable = false)
   private Instant updatedAt;
+
   private Instant deletedAt;
+
+  @PrePersist
+  protected void onCreate() {
+    Instant now = Instant.now();
+    createdAt = now;
+    updatedAt = now;
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+    updatedAt = Instant.now();
+  }
 }
