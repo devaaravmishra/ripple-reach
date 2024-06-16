@@ -19,12 +19,12 @@ public class UserPartialUpdateRequestDto {
     @Size(message = Messages.USERNAME_SIZE, min = 3, max = 25)
     private String username;
 
-    @Size(message = Messages.UNIVERSITY_SIZE, min = 3, max = 30)
+    @Size(message = Messages.UNIVERSITY_SIZE, min = 3, max = 50)
     private String university;
 
-    @Size(message = Messages.COMPANY_SIZE, min = 3, max = 30)
+    @Size(message = Messages.COMPANY_SIZE, min = 3, max = 50)
     private String company;
 
-    @Size(message = Messages.PROFESSION_SIZE, min = 3, max = 20)
+    @Size(message = Messages.PROFESSION_SIZE, min = 3, max = 50)
     private String profession;
 }
