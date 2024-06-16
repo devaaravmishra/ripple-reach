@@ -6,6 +6,7 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -61,10 +63,25 @@ public class GlobalExceptionHandler {
             .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
             .type(String.valueOf(HttpStatus.UNPROCESSABLE_ENTITY))
             .title(Messages.UNPROCESSABLE_ENTITY)
-            .message(ex.getMessage())
+            .message(ex.getMessage().split(":")[0])
             .build();
 
     return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorResponseDto> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    ErrorResponseDto errorResponseDto = ErrorResponseDto
+            .builder()
+            .status(HttpStatus.BAD_REQUEST.value())
+            .type(HttpStatus.BAD_REQUEST.toString())
+            .title(ex.getErrorCode().toUpperCase())
+            .message(String.format("Parameter '%s' should be of type '%s'",
+                    ex.getName(),
+                    Objects.requireNonNull(ex.getRequiredType()).getSimpleName()))
+            .build();
+
+    return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -120,6 +137,7 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorResponseDto);
   }
+
   @ExceptionHandler(EntityExistsException.class)
   public ResponseEntity<ErrorResponseDto> handleEntityAlreadyExistsException(
       EntityExistsException ex) {
