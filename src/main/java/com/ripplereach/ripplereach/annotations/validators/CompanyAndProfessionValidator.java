@@ -9,7 +9,7 @@ public class CompanyAndProfessionValidator
     implements ConstraintValidator<CompanyAndProfession, RegisterRequestDto> {
   @Override
   public boolean isValid(RegisterRequestDto dto, ConstraintValidatorContext context) {
-    boolean companyAndNotProfession = dto.getCompany() != null && !dto.getCompany().isEmpty();
+    boolean companyAndNotProfession = dto.getCompany() != null && dto.getCompany().isEmpty();
 
     if (companyAndNotProfession) {
       // If request is invalid attaching proper key "validation" to the error
