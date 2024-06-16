@@ -3,10 +3,14 @@ package com.ripplereach.ripplereach.mappers;
 import com.ripplereach.ripplereach.dtos.RegisterRequestDto;
 import com.ripplereach.ripplereach.dtos.UserPartialUpdateRequestDto;
 import com.ripplereach.ripplereach.dtos.UserUpdateRequestDto;
+import com.ripplereach.ripplereach.enums.RoleName;
 import com.ripplereach.ripplereach.models.Company;
+import com.ripplereach.ripplereach.models.Role;
 import com.ripplereach.ripplereach.models.University;
 import com.ripplereach.ripplereach.models.User;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 @Component
 public class UserMapper {
@@ -27,6 +31,14 @@ public class UserMapper {
     }
 
     user.setPhone(registerRequestDto.getPhone());
+
+    if (registerRequestDto.getRoleName() != null) {
+      Role role = Role.builder()
+              .name(RoleName.valueOf(registerRequestDto.getRoleName()))
+              .build();
+
+      user.setRoles(Set.of(role));
+    }
 
     return user;
   }

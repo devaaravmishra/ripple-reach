@@ -6,6 +6,9 @@ import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.repositories.UserRepository;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.AllArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,10 +28,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String phone) {
     String sha3PhoneHex = new DigestUtils("SHA3-256").digestAsHex(phone);
+
     Optional<User> userOptional = userRepository.findUserByPhone(sha3PhoneHex);
     User user =
         userOptional.orElseThrow(
             () -> new UsernameNotFoundException("No user " + "Found with phone : " + sha3PhoneHex));
+
+    Set<GrantedAuthority> authorities = user.getRoles().stream()
+            .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+            .collect(Collectors.toSet());
 
     return new org.springframework.security.core.userdetails.User(
         user.getUsername(),
@@ -37,7 +45,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         true,
         true,
         true,
-        getAuthorities("USER"));
+        authorities);
   }
 
   private Collection<? extends GrantedAuthority> getAuthorities(String role) {

@@ -31,6 +31,8 @@ public class RegisterRequestDto {
   @Size(message = Messages.UNIVERSITY_SIZE, min = 3, max = 50)
   private String university;
 
-  @Size(message = Messages.PROFESSION_SIZE, min = 3, max = 25)
+  @Size(message = Messages.PROFESSION_SIZE, min = 3, max = 50)
   private String profession;
+
+  private String roleName;
 }

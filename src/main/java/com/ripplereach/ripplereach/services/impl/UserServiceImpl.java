@@ -1,11 +1,14 @@
 package com.ripplereach.ripplereach.services.impl;
 
+import com.ripplereach.ripplereach.enums.RoleName;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
 import com.ripplereach.ripplereach.models.Company;
+import com.ripplereach.ripplereach.models.Role;
 import com.ripplereach.ripplereach.models.University;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.repositories.UserRepository;
 import com.ripplereach.ripplereach.services.CompanyService;
+import com.ripplereach.ripplereach.services.RoleService;
 import com.ripplereach.ripplereach.services.UniversityService;
 import com.ripplereach.ripplereach.services.UserService;
 import com.ripplereach.ripplereach.utilities.AvatarGenerator;
@@ -20,7 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -31,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UniversityService universityService;
     private final CompanyService companyService;
+    private final RoleService roleService;
 
     @Override
     @Transactional(readOnly = true)
@@ -121,6 +128,8 @@ public class UserServiceImpl implements UserService {
             String avatar = AvatarGenerator.generateRandomAvatar();
             user.setAvatar(avatar);
 
+            setRoles(user);
+            
             User userEntity = userRepository.save(user);
 
             log.info("User with id {}, username {} is created successfully.",
@@ -297,6 +306,21 @@ public class UserServiceImpl implements UserService {
             throw new RippleReachException("Error finding user with username: " + username);
         }
 
+    }
+
+    private void setRoles(User user) {
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            Set<Role> roles = user.getRoles().stream()
+                    .map(role -> roleService.createRoleIfNotExists(role.getName()))
+                    .collect(Collectors.toSet());
+            user.setRoles(roles);
+
+            return;
+        }
+
+        Set<Role> roles = Collections.singleton(roleService.createRole(String.valueOf(RoleName.USER)));
+
+        user.setRoles(roles);
     }
 
     private static String generatePhoneHash(String phone) {

@@ -8,6 +8,8 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+
+import com.ripplereach.ripplereach.enums.RoleName;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -64,6 +66,8 @@ public class SecurityConfig {
                         .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/users/generate-usernames")
                     .permitAll()
+                        .requestMatchers("/api/categories/**", "/api/communities/**")
+                        .hasRole(RoleName.ADMIN.toString())
                     .requestMatchers(
                         "/v3/api-docs",
                         "/swagger-ui/index.html",
