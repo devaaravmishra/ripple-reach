@@ -31,7 +31,10 @@ public class UserController {
   private final Mapper<User, UserResponseDto> userResponseMapper;
 
   @GetMapping("/generate-usernames")
-  @Operation(description = "Generate a list of random usernames.")
+  @Operation(
+          summary = "Generate Usernames",
+          description = "Generate a list of random usernames."
+  )
   public ResponseEntity<List<String>> generateUsernames(
       @RequestParam(defaultValue = "10") int count) {
     List<String> usernames = UsernameGenerator.generateUsernames(count);
@@ -39,7 +42,10 @@ public class UserController {
   }
 
   @GetMapping("/generate-avatar")
-  @Operation(description = "Generates a random avatar.")
+  @Operation(
+          summary = "Generate Avatar",
+          description = "Generates a random avatar."
+  )
   public ResponseEntity<String> generateAvatar() {
     String avatar = AvatarGenerator.generateRandomAvatar();
     return ResponseEntity.ok(avatar);
@@ -47,6 +53,10 @@ public class UserController {
 
   @GetMapping("/{username}")
   @SecurityRequirement(name = "Bearer Authentication")
+  @Operation(
+          summary = "Get User by Username",
+          description = "Retrieves a user by their username."
+  )
   public ResponseEntity<UserResponseDto> getUser(@PathVariable String username) {
     User userEntity = userService.findByUsername(username);
     UserResponseDto userResponseDto = userResponseMapper.mapTo(userEntity);
@@ -56,6 +66,10 @@ public class UserController {
 
   @PutMapping("/{userId}")
   @SecurityRequirement(name = "Bearer Authentication")
+  @Operation(
+          summary = "Update User",
+          description = "Updates an existing user by their ID."
+  )
   public ResponseEntity<UserResponseDto> updateUser
           (@PathVariable Long userId, @Valid @RequestBody UserUpdateRequestDto userUpdateRequestDto) {
     User userEntity = userMapper.mapToUser(userUpdateRequestDto);
@@ -67,6 +81,10 @@ public class UserController {
 
   @PatchMapping(path = "/{userId}")
   @SecurityRequirement(name = "Bearer Authentication")
+  @Operation(
+          summary = "Partial Update User",
+          description = "Partially updates an existing user by their ID."
+  )
   public ResponseEntity<UserResponseDto> partialUpdateUser
           (@PathVariable Long userId, @RequestBody UserPartialUpdateRequestDto userPartialUpdateRequestDto) {
     User userEntity = userMapper.mapToUser(userPartialUpdateRequestDto);
@@ -78,6 +96,10 @@ public class UserController {
 
   @DeleteMapping("/{phone}")
   @SecurityRequirement(name = "Bearer Authentication")
+  @Operation(
+          summary = "Delete User by Phone",
+          description = "Deletes an existing user by their phone number."
+  )
   public ResponseEntity<String> deleteUserByPhone(@PathVariable String phone) {
     userService.deleteByPhone(phone);
 
@@ -86,6 +108,10 @@ public class UserController {
 
   @DeleteMapping("/{username}")
   @SecurityRequirement(name = "Bearer Authentication")
+  @Operation(
+          summary = "Delete User by Username",
+          description = "Deletes an existing user by their username."
+  )
   public ResponseEntity<String> deleteUserByUsername(@PathVariable String username) {
     userService.deleteByUsername(username);
 
@@ -94,9 +120,13 @@ public class UserController {
 
   @DeleteMapping("/{userId}")
   @SecurityRequirement(name = "Bearer Authentication")
+  @Operation(
+          summary = "Delete User by ID",
+          description = "Deletes an existing user by their ID."
+  )
   public ResponseEntity<String> deleteUserById(@PathVariable Long userId) {
     userService.deleteByUserId(userId);
 
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Messages.USER_DELETED_SUCCESSFULLY);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

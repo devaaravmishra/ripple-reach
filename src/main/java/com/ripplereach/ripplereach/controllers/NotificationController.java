@@ -18,8 +18,11 @@ public class NotificationController {
     private final FCMService fcmService;
 
     @PostMapping("/send")
-    @Operation(description = "Let a user send push notification to his/her device via provided device token.")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Send Notification",
+            description = "Sends a push notification via FCM."
+    )
     public void sendNotification(@Valid NotificationRequestDto notificationRequest) {
         fcmService.sendNotification(
                 notificationRequest.getDeviceToken(),

@@ -27,7 +27,10 @@ public class AuthController {
   private final UserMapper userMapper;
 
   @PostMapping("/register")
-  @Operation(description = "API which let user create a fresh account if they didn't have one before.")
+  @Operation(
+          summary = "User Registration",
+          description = "API which lets a user create a fresh account if they didn't have one before."
+  )
   public ResponseEntity<RegisterResponseDto> register(
       @Valid @RequestBody RegisterRequestDto registerRequestDto) {
     authService.verifyIdToken(registerRequestDto.getIdToken());
@@ -47,6 +50,10 @@ public class AuthController {
   }
 
   @PostMapping("/login")
+  @Operation(
+          summary = "User Login",
+          description = "API which lets a user log in with their credentials."
+  )
   public ResponseEntity<LoginResponseDto> login(
       @Valid @RequestBody LoginRequestDto loginRequestDto) {
     authService.verifyIdToken(loginRequestDto.getIdToken());
@@ -57,7 +64,10 @@ public class AuthController {
 
   @PostMapping("/refresh/token")
   @SecurityRequirement(name = "Bearer Authentication")
-  @Operation(description = "API which generates new auth token with the help of refresh token.")
+  @Operation(
+          summary = "Refresh Token",
+          description = "API which generates a new auth token with the help of a refresh token."
+  )
   public ResponseEntity<AuthResponseDto> refreshTokens(
       @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
     AuthResponseDto authResponseDto = authService.refreshToken(refreshTokenRequest);
@@ -67,7 +77,10 @@ public class AuthController {
 
   @PostMapping("/logout")
   @SecurityRequirement(name = "Bearer Authentication")
-  @Operation(description = "API which let users log out of their current session by invalidating their auth tokens.")
+  @Operation(
+          summary = "User Logout",
+          description = "API which lets users log out of their current session by invalidating their auth tokens."
+  )
   public ResponseEntity<String> logout(@Valid @RequestBody LogoutRequestDto logoutRequestDto) {
     authService.logout(logoutRequestDto);
 
