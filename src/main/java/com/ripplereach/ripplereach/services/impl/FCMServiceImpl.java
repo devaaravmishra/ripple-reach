@@ -1,10 +1,7 @@
 package com.ripplereach.ripplereach.services.impl;
 
 import com.google.api.core.ApiFuture;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.*;
 import com.ripplereach.ripplereach.services.FCMService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -28,7 +25,6 @@ public class FCMServiceImpl implements FCMService {
                 .setToken(targetToken)
                 .setNotification(notification)
                 .build();
-
         try {
             String response = FirebaseMessaging.getInstance().send(message);
             log.info("Successfully sent fcm message: {}", response);
@@ -54,9 +50,9 @@ public class FCMServiceImpl implements FCMService {
         return CompletableFuture.runAsync(() -> {
             try {
                 String result = response.get();
-                log.info("Successfully sent FCM message: {}", result);
+                log.info("Successfully sent FCM message async: {}", result);
             } catch (InterruptedException | ExecutionException e) {
-                log.error("Error while getting response from Firebase", e);
+                log.error("Error while sending notifications async", e);
             }
         });
     }
