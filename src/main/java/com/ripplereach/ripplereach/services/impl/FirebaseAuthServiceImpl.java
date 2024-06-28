@@ -15,9 +15,8 @@ public class FirebaseAuthServiceImpl implements FirebaseAuthService {
     @Override
     public String verifyIdToken(String idToken) {
         try {
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
-
-            return decodedToken.getUid();
+             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+             return decodedToken.getUid();
         } catch (FirebaseAuthException e) {
             log.error("Error while verifying user, invalid token!", e);
             throw new AccessDeniedException("Error while verifying user, invalid Token!");
