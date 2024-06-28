@@ -14,6 +14,7 @@ public class Messages {
     public static final String ENTITY_ALREADY_EXISTS = "Entity already exists!";
     public static final String UNEXPECTED_ERROR = "An unexpected error occurred.";
 
+
     // Informational Messages
     public static final String LOGGED_OUT_SUCCESSFULLY = "Logged out successfully!!";
     public static final String USER_CREATED_SUCCESSFULLY = "User created successfully.";
@@ -47,6 +48,8 @@ public class Messages {
     public static final String COMPANY_SIZE = "Company name must be between 3 to 50 characters.";
     public static final String PROFESSION_SIZE = "Profession name must be between 3 to 50 characters.";
     public static final String CATEGORY_NAME_SIZE = "Category name must be between 3 to 25 characters.";
+    public static final String INVALID_URL = "Provided URL is invalid.";
+
 
     // Other Messages
     public static final String WELCOME_MESSAGE = "Welcome to Ripple Reach!";
