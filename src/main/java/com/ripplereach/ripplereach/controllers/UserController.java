@@ -1,6 +1,5 @@
 package com.ripplereach.ripplereach.controllers;
 
-import com.ripplereach.ripplereach.constants.Messages;
 import com.ripplereach.ripplereach.dtos.UserPartialUpdateRequestDto;
 import com.ripplereach.ripplereach.dtos.UserResponseDto;
 import com.ripplereach.ripplereach.dtos.UserUpdateRequestDto;
@@ -10,8 +9,6 @@ import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.services.UserService;
 import com.ripplereach.ripplereach.utilities.AvatarGenerator;
 import com.ripplereach.ripplereach.utilities.UsernameGenerator;
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +17,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -94,39 +93,39 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
   }
 
-  @DeleteMapping("/{phone}")
+  @DeleteMapping("/phone/{phone}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   @SecurityRequirement(name = "Bearer Authentication")
   @Operation(
           summary = "Delete User by Phone",
           description = "Deletes an existing user by their phone number."
   )
-  public ResponseEntity<String> deleteUserByPhone(@PathVariable String phone) {
-    userService.deleteByPhone(phone);
-
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Messages.USER_DELETED_SUCCESSFULLY);
+  public void deleteUserByPhone
+          (@PathVariable String phone, @RequestParam(defaultValue = "false") boolean hardDelete) {
+    userService.deleteByPhone(phone, hardDelete);
   }
 
-  @DeleteMapping("/{username}")
+  @DeleteMapping("/username/{username}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   @SecurityRequirement(name = "Bearer Authentication")
   @Operation(
           summary = "Delete User by Username",
           description = "Deletes an existing user by their username."
   )
-  public ResponseEntity<String> deleteUserByUsername(@PathVariable String username) {
-    userService.deleteByUsername(username);
-
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Messages.USER_DELETED_SUCCESSFULLY);
+  public void deleteUserByUsername
+          (@PathVariable String username, @RequestParam(defaultValue = "false") boolean hardDelete) {
+    userService.deleteByUsername(username, hardDelete);
   }
 
   @DeleteMapping("/{userId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   @SecurityRequirement(name = "Bearer Authentication")
   @Operation(
           summary = "Delete User by ID",
           description = "Deletes an existing user by their ID."
   )
-  public ResponseEntity<String> deleteUserById(@PathVariable Long userId) {
-    userService.deleteByUserId(userId);
-
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  public void deleteUserById
+          (@PathVariable Long userId, @RequestParam(defaultValue = "false") boolean hardDelete) {
+    userService.deleteById(userId, hardDelete);
   }
 }

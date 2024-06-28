@@ -158,7 +158,7 @@ public class CommunityServiceImpl implements CommunityService {
         community.setDescription(dto.getDesc());
         community.setCategory(category);
 
-        if (dto.getImage() != null && !dto.getImage().isEmpty()) {
+        if (dto.getImage() != null) {
             String imageUrl = imageService.saveImage(dto.getImage());
             community.setImageUrl(imageUrl);
         }
@@ -184,7 +184,7 @@ public class CommunityServiceImpl implements CommunityService {
         if (dto.getDesc() != null && !dto.getDesc().isEmpty()) {
             community.setDescription(dto.getDesc());
         }
-        if (dto.getImage() != null && !dto.getImage().isEmpty()) {
+        if (dto.getImage() != null) {
             String imageUrl = imageService.saveImage(dto.getImage());
             community.setImageUrl(imageUrl);
         }
