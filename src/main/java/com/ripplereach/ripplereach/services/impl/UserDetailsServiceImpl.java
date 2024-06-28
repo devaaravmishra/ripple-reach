@@ -1,47 +1,39 @@
 package com.ripplereach.ripplereach.services.impl;
 
-import static java.util.Collections.singletonList;
-
 import com.ripplereach.ripplereach.models.User;
-import com.ripplereach.ripplereach.repositories.UserRepository;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.ripplereach.ripplereach.services.UserService;
 import lombok.AllArgsConstructor;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.singletonList;
+
 @Service
+@Transactional
 @AllArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
-  private final UserRepository userRepository;
+  private final UserService userService;
 
   @Override
   @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String phone) {
-    String sha3PhoneHex = new DigestUtils("SHA3-256").digestAsHex(phone);
-
-    Optional<User> userOptional = userRepository.findUserByPhone(sha3PhoneHex);
-    User user =
-        userOptional.orElseThrow(
-            () -> new UsernameNotFoundException("No user " + "Found with phone : " + sha3PhoneHex));
-
+    User user = userService.findByPhone(phone);
     Set<GrantedAuthority> authorities = user.getRoles().stream()
             .map(role -> new SimpleGrantedAuthority(role.getName().name()))
             .collect(Collectors.toSet());
 
     return new org.springframework.security.core.userdetails.User(
-        user.getUsername(),
         user.getPhone(),
-        user.getIsVerified(),
+        user.getPhone(),
+        user.getId() != null,
         true,
         true,
         true,

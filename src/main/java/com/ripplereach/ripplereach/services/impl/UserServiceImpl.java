@@ -42,56 +42,35 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public User findByUsername(String username) {
+        return getUserByUsername(username);
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.findByUsername(username).isPresent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<String> findExistingUsernames(Set<String> usernames) {
         try {
-            Optional<User> userEntity = getUserByUsername(username);
-
-            if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
-                log.error("User with username {} doesn't exists", username);
-                throw new EntityNotFoundException("User with this username doesn't exists!");
-            }
-
-            return userEntity.get();
-        } catch (EntityNotFoundException ex) {
-            throw ex;
+            return userRepository.findExistingUsernames(usernames);
         } catch (RuntimeException ex) {
-            log.error("Error finding user with username {}", username);
-            throw new RuntimeException("Error finding user this username");
+            log.error("Error occurred while fetching an list of usernames!", ex);
+            throw new RippleReachException("Error occurred while fetching an list of usernames!");
         }
     }
 
     @Override
     @Transactional(readOnly = true)
     public User findByPhone(String phone) {
-        try {
-            Optional<User> userEntity = getUserByPhone(phone);
-            
-            if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
-                log.error("User with this phone doesn't exists!");
-                throw new EntityNotFoundException("Can't find user with userId: " + phone);
-            }
-            
-            return userEntity.get();
-        } catch (RuntimeException ex) {
-            log.error("Error while finding user with phone: {}", phone);
-            throw new RippleReachException("Error while finding user with phone: " + phone);
-        }
+        return getUserByPhone(phone);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public User findByUserId(Long userId) {
-        try {
-            Optional<User> userEntity = getUserByUserId(userId);
-
-            if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
-                log.error("User with userId {} doesn't exists!", userId);
-                throw new EntityNotFoundException("Can't find user with userId: " + userId);
-            }
-
-            return userEntity.get();
-        } catch (EntityNotFoundException ex) {
-            throw ex;
-        }
+    public User findById(Long userId) {
+        return getUserById(userId);
     }
 
     @Override
@@ -101,12 +80,14 @@ public class UserServiceImpl implements UserService {
             String oneWayPhoneHex = generatePhoneHash(user.getPhone());
 
             // Check if this user already exists or not
-            Optional<User> existingUser =
-                   getUserByPhone(user.getPhone())
-                            .or(() -> userRepository.findUserByUsername(user.getUsername()));
+            Optional<User> existingUser = userRepository.findByPhone(oneWayPhoneHex)
+                    .or(() -> userRepository.findByUsername(user.getUsername()));
 
             if (existingUser.isPresent()) {
-                log.error("User with phone {} or username {} already exists", oneWayPhoneHex, user.getUsername());
+                log.error("User with phone {} or username {} already exists",
+                        oneWayPhoneHex, user.getUsername()
+                );
+
                 throw new EntityExistsException("User with these credentials already exists");
             }
 
@@ -129,18 +110,20 @@ public class UserServiceImpl implements UserService {
             user.setAvatar(avatar);
 
             setRoles(user);
-            
+
             User userEntity = userRepository.save(user);
 
             log.info("User with id {}, username {} is created successfully.",
-                    userEntity.getUserId(),
+                    userEntity.getId(),
                     userEntity.getUsername()
             );
 
             return userEntity;
+        } catch (EntityExistsException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             log.error("Error while saving user with username: {}!", user.getUsername());
-            throw new RippleReachException("Error while saving user!");
+            throw new RippleReachException("Error while saving user with username: " + user.getUsername());
         }
     }
 
@@ -158,19 +141,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteByUsername(String username) {
+    public void deleteByUsername(String username, boolean hardDelete) {
         try {
-            Optional<User> userEntity = getUserByUsername(username);
+            User userEntity = getUserByUsername(username);
 
-            if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
-                log.error("User with username {} doesn't exists", username);
-                throw new EntityNotFoundException("User with this username doesn't exists!");
+            if (hardDelete) {
+                userRepository.delete(userEntity);
+                log.info("User with userId {}, username {} is hard deleted.",
+                        userEntity.getId(), userEntity.getUsername()
+                );
+                return;
             }
 
-            userEntity.get().setDeletedAt(Instant.now());
-            User deletedUser = userRepository.save(userEntity.get());
+            userEntity.setDeletedAt(Instant.now());
+            User deletedUser = userRepository.save(userEntity);
 
-            log.info("User with userId {}, username {} is soft deleted.", deletedUser.getUserId(), deletedUser.getUsername());
+            log.info("User with userId {}, username {} is soft deleted.",
+                    deletedUser.getId(), deletedUser.getUsername()
+            );
         } catch (RuntimeException ex) {
             log.error("Error while deleting user with username {}", username);
             throw new RippleReachException("Error while deleting user!");
@@ -179,19 +167,26 @@ public class UserServiceImpl implements UserService {
     
     @Override
     @Transactional
-    public void deleteByUserId(Long userId) {
+    public void deleteById(Long userId, boolean hardDelete) {
         try {
-            Optional<User> userEntity = getUserByUserId(userId);
+            User userEntity = getUserById(userId);
 
-            if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
-                log.error("User with username {} doesn't exists", userId);
-                throw new EntityNotFoundException("User with this username doesn't exists!"); 
+            if (hardDelete) {
+                userRepository.delete(userEntity);
+                log.info("User with userId {}, username {} is hard deleted.",
+                        userEntity.getId(), userEntity.getUsername()
+                );
+                return;
             }
 
-            userEntity.get().setDeletedAt(Instant.now());
-            User deletedUser = userRepository.save(userEntity.get());
+            userEntity.setDeletedAt(Instant.now());
+            User deletedUser = userRepository.save(userEntity);
 
-            log.info("User with userId {}, username {} is soft deleted.", deletedUser.getUserId(), deletedUser.getUsername());
+            log.info("User with userId {}, username {} is soft deleted.",
+                    deletedUser.getId(), deletedUser.getUsername()
+            );
+        } catch (EntityNotFoundException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             log.error("Error while deleting user with userId: {}", userId, ex);
             throw new RippleReachException("Error while deleting user!");
@@ -200,38 +195,35 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteByPhone(String phone) {
-        String oneWayPhoneHex = generatePhoneHash(phone);
-
+    public void deleteByPhone(String phone, boolean hardDelete) {
         try {
-            Optional<User> userEntity = getUserByPhone(oneWayPhoneHex);
+            User userEntity = getUserByPhone(phone);
 
-            if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
-                log.error("User with username {} doesn't exists", oneWayPhoneHex);
-                throw new EntityNotFoundException("User with this username doesn't exists!");
+            if (hardDelete) {
+                userRepository.delete(userEntity);
+                log.info("User with userId {}, username {} is hard deleted.",
+                        userEntity.getId(), userEntity.getUsername()
+                );
+                return;
             }
 
-            userEntity.get().setDeletedAt(Instant.now());
-            User deletedUser = userRepository.save(userEntity.get());
+            userEntity.setDeletedAt(Instant.now());
+            User deletedUser = userRepository.save(userEntity);
 
-            log.info("User with userId {}, username {} is soft deleted.", deletedUser.getUserId(), deletedUser.getUsername());
+            log.info("User with userId {}, username {} is soft deleted.",
+                    deletedUser.getId(), deletedUser.getUsername()
+            );
         } catch (RuntimeException ex) {
-            log.error("Error while deleting user with phone: {}", oneWayPhoneHex, ex);
+            log.error("Error while deleting user with phone: {}", phone, ex);
             throw new RippleReachException("Error while deleting user!");
         }
     }
 
     private User saveUserDetails(Long userId, User user) {
         try {
-            Optional<User> userEntity = getUserByUserId(userId);
+            User existingUser = getUserById(userId);
 
-            if (userEntity.isEmpty()) {
-                log.error("User with userId {} doesn't exist", userId);
-                throw new EntityNotFoundException("User with this userId doesn't exist");
-            }
-
-            User existingUser = userEntity.get();
-            user.setUserId(existingUser.getUserId());
+            user.setId(existingUser.getId());
 
             boolean isUsernamePresent = !user.getUsername().isEmpty();
             boolean isCompanyPresent = user.getCompany() != null;
@@ -266,7 +258,7 @@ public class UserServiceImpl implements UserService {
             User updatedUser = userRepository.save(existingUser);
 
             log.info("User with id {}, username {} is updated successfully.",
-                    updatedUser.getUserId(),
+                    updatedUser.getId(),
                     updatedUser.getUsername()
             );
 
@@ -279,28 +271,59 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private Optional<User> getUserByUserId(Long userId) {
+    private User getUserById(Long userId) {
         try {
-            return userRepository.findUserByUserId(userId);
+            Optional<User> userEntity = userRepository.findById(userId);
+
+            if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
+                log.error("User with userId {} doesn't exists!", userId);
+                throw new EntityNotFoundException("Can't find user with userId: " + userId);
+            }
+
+            return userEntity.get();
+        } catch (EntityNotFoundException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             log.error("Error while finding user with id {}", userId);
             throw new RippleReachException("Error finding user with userId: " + userId);
         }
     }
 
-    private Optional<User> getUserByPhone(String phone) {
+    private User getUserByPhone(String phone) {
         try {
-            String oneWayPhoneHex = generatePhoneHash(phone);
-            return userRepository.findUserByPhone(oneWayPhoneHex);
+            if (!HashUtils.verifyHash(phone)) {
+                phone = generatePhoneHash(phone);
+            }
+
+            Optional<User> userEntity = userRepository.findByPhone(phone);
+
+            if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
+                log.error("User with this phone doesn't exists!");
+                throw new EntityNotFoundException("Can't find user with phone: " + phone);
+            }
+
+            return userEntity.get();
+        } catch (EntityNotFoundException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             log.error("Error while finding user with phone {}", phone);
             throw new RippleReachException("Error finding user with phone: " + phone);
         }
     }
 
-    private Optional<User> getUserByUsername(String username) {
+    private User getUserByUsername(String username) {
         try {
-            return userRepository.findUserByUsername(username);
+            Optional<User> userEntity = userRepository.findByUsername(username);
+
+            if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
+                log.error("User with this username: {} doesn't exists!", username);
+                throw new EntityNotFoundException("Can't find user with username: " + username);
+            }
+
+            return userEntity.get();
+        }
+        catch (EntityNotFoundException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             log.error("Error while finding user with username {}", username);
             throw new RippleReachException("Error finding user with username: " + username);
@@ -318,7 +341,7 @@ public class UserServiceImpl implements UserService {
             return;
         }
 
-        Set<Role> roles = Collections.singleton(roleService.createRole(String.valueOf(RoleName.USER)));
+        Set<Role> roles = Collections.singleton(roleService.createRole(RoleName.USER));
 
         user.setRoles(roles);
     }
@@ -328,6 +351,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean isUserSoftDeleted(User user) {
-        return !user.getDeletedAt().toString().isEmpty();
+        return user.getDeletedAt() != null;
     }
 }

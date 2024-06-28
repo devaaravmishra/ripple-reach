@@ -1,10 +1,10 @@
 package com.ripplereach.ripplereach.models;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.Instant;
 import java.util.Set;
-
-import lombok.*;
 
 @Entity
 @Table(name = "app_user")
@@ -16,7 +16,7 @@ import lombok.*;
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long userId;
+  private Long id;
 
   @Column(unique = true, nullable = false)
   private String username;
