@@ -6,11 +6,11 @@ import com.ripplereach.ripplereach.models.Role;
 import java.util.List;
 
 public interface RoleService {
-    Role createRole(String name);
+    Role createRole(RoleName roleName);
     Role updateRole(Long roleId, String name);
     void deleteRole(Long roleId);
     List<Role> getAllRoles();
     Role getRoleById(Long roleId);
-    Role getRoleByName(String name);
+    Role getRoleByName(RoleName roleName);
     Role createRoleIfNotExists(RoleName name);
 }
