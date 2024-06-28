@@ -4,10 +4,7 @@ import com.ripplereach.ripplereach.constants.Messages;
 import com.ripplereach.ripplereach.dtos.ErrorResponseDto;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
+import org.apache.tomcat.util.http.fileupload.impl.InvalidContentTypeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -20,6 +17,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -67,6 +68,19 @@ public class GlobalExceptionHandler {
             .build();
 
     return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
+  }
+
+  @ExceptionHandler(InvalidContentTypeException.class)
+  public ResponseEntity<ErrorResponseDto> handleInvalidContentTypeException(InvalidContentTypeException ex) {
+    ErrorResponseDto errorResponseDto = ErrorResponseDto
+            .builder()
+            .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .type(HttpStatus.UNPROCESSABLE_ENTITY.toString())
+            .title(Messages.UNPROCESSABLE_ENTITY)
+            .message(ex.getMessage())
+            .build();
+
+    return new ResponseEntity<>(errorResponseDto, HttpStatus.UNPROCESSABLE_ENTITY);
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
