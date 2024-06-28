@@ -38,7 +38,7 @@ public class AvatarConfig {
         try {
             Resource[] resources = resourcePatternResolver.getResources("classpath:/static/avatars/*");
             for (Resource resource : resources) {
-                avatarList.add(staticResourceUrl + "/avatars/" + resource.getFilename());
+                avatarList.add("/avatars/" + resource.getFilename());
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to load avatar list", e);
