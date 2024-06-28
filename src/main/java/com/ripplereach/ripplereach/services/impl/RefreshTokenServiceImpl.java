@@ -5,13 +5,13 @@ import com.ripplereach.ripplereach.models.RefreshToken;
 import com.ripplereach.ripplereach.repositories.RefreshTokenRepository;
 import com.ripplereach.ripplereach.services.RefreshTokenService;
 import jakarta.persistence.EntityNotFoundException;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -39,9 +39,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   @Transactional(readOnly = true)
   public void validateRefreshToken(String token) {
     try {
-      refreshTokenRepository
-          .findByToken(token)
-          .orElseThrow(() -> new EntityNotFoundException("Invalid refresh Token"));
+      getRefreshToken(token);
     } catch (EntityNotFoundException ex) {
       throw ex;
     } catch (RuntimeException ex) {
@@ -54,15 +52,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   @Transactional(readOnly = true)
   public RefreshToken findByToken(String token) {
     try {
-      Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByToken(token);
-
-      if (refreshTokenOptional.isEmpty()) {
-        throw new RuntimeException();
-      }
-
-      return refreshTokenOptional.get();
+      return getRefreshToken(token);
+    } catch (EntityNotFoundException ex) {
+      log.error("Invalid refresh token: {}", token);
+      throw ex;
     } catch (RuntimeException ex) {
-      throw new EntityNotFoundException("Invalid refresh token!");
+      log.error("Error while fetching token: {}", token);
+      throw new RippleReachException("Error while fetching token: " + token);
     }
   }
 
@@ -70,11 +66,23 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   @Transactional
   public void deleteRefreshToken(String token) {
     try {
-      refreshTokenRepository.deleteByToken(token);
-      log.info("Refresh token deleted successfully");
+      String refreshToken = getRefreshToken(token).getToken();
+      refreshTokenRepository.deleteByToken(refreshToken);
+      log.info("Refresh token: {} deleted successfully", refreshToken);
     } catch (RuntimeException ex) {
       log.error("Error while deleting refresh token", ex);
       throw new RippleReachException("Error while deleting token");
     }
+  }
+
+  private RefreshToken getRefreshToken(String token) {
+    Optional<RefreshToken> refreshToken = refreshTokenRepository.findByToken(token);
+
+    if (refreshToken.isEmpty()) {
+      log.error("Invalid refresh Token: {}", token);
+      throw new EntityNotFoundException("Invalid refresh token: " + token);
+    }
+
+    return refreshToken.get();
   }
 }

@@ -8,16 +8,18 @@ import com.ripplereach.ripplereach.security.JwtProvider;
 import com.ripplereach.ripplereach.services.AuthService;
 import com.ripplereach.ripplereach.services.RefreshTokenService;
 import com.ripplereach.ripplereach.services.UserService;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
 
 @Service
 @Slf4j
@@ -29,24 +31,17 @@ public class AuthServiceImpl implements AuthService {
   private final RefreshTokenService refreshTokenService;
   private final FirebaseAuthServiceImpl firebaseAuthService;
   private final JwtProvider jwtProvider;
+  private final AuthenticationManager authenticationManager;
 
   @Override
   @Transactional
   public User register(User user) {
-    try {
       return userService.create(user);
-    } catch (EntityExistsException ex) {
-      throw ex;
-    } catch (RuntimeException ex) {
-      log.error("Error registering user: ", ex);
-      throw new RippleReachException("Error occurred while registering user", ex);
-    }
   }
 
   @Override
   @Transactional
   public LoginResponseDto login(LoginRequestDto loginRequestDto) {
-    try {
       User userEntity = userService.findByPhone(loginRequestDto.getPhone());
       AuthResponseDto authResponseDto = generateAuthenticationToken(userEntity);
 
@@ -55,10 +50,6 @@ public class AuthServiceImpl implements AuthService {
           .user(userEntity)
           .auth(authResponseDto)
           .build();
-    } catch (RuntimeException ex) {
-      log.error("Error while authenticating user");
-      throw new RippleReachException("Error while authenticating user");
-    }
   }
 
   @Override
@@ -79,18 +70,26 @@ public class AuthServiceImpl implements AuthService {
   @Override
   @Transactional
   public AuthResponseDto generateAuthenticationToken(User user) {
+    log.info("Attempting to authenticate user with phone: {}", user.getPhone());
+
     try {
-      String token = jwtProvider.generateTokenWithUserName(user.getUsername());
+      Authentication authenticate = authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(user.getPhone(), user.getPhone()));
+
+      SecurityContextHolder.getContext().setAuthentication(authenticate);
+
+      String token = jwtProvider.generateToken(authenticate);
       RefreshToken refreshToken = refreshTokenService.generateRefreshToken();
 
       return AuthResponseDto.builder()
-          .token(token)
-          .refreshToken(refreshToken.getToken())
-          .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-          .username(user.getUsername())
-          .build();
-    } catch (RuntimeException ex) {
-      throw new RippleReachException("Error while generating auth token");
+              .token(token)
+              .refreshToken(refreshToken.getToken())
+              .expiresAt(Instant.ofEpochSecond(jwtProvider.getJwtExpirationInMillis()))
+              .username(user.getUsername())
+              .build();
+    } catch (Exception e) {
+      log.error("Authentication failed: {}", e.getMessage());
+      throw new RippleReachException("Authentication failed", e);
     }
   }
 
@@ -98,8 +97,12 @@ public class AuthServiceImpl implements AuthService {
   @Transactional(readOnly = true)
   public AuthResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequest) {
     try {
+      Authentication authentication = SecurityContextHolder
+              .getContext()
+              .getAuthentication();
+
       refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
-      String token = jwtProvider.generateTokenWithUserName(refreshTokenRequest.getUsername());
+      String token = jwtProvider.generateToken(authentication);
 
       return AuthResponseDto.builder()
           .token(token)
