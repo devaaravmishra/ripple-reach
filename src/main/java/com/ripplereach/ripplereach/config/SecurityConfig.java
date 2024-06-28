@@ -6,31 +6,32 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-
 import com.ripplereach.ripplereach.enums.RoleName;
+import com.ripplereach.ripplereach.security.CustomPasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 
 @Configuration
 @RequiredArgsConstructor
@@ -56,6 +57,8 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
+                        .requestMatchers("/images", "/images/**")
+                        .permitAll()
                     .requestMatchers("/api/auth/**")
                     .permitAll()
                         .requestMatchers("/actuator/**")
@@ -66,8 +69,13 @@ public class SecurityConfig {
                         .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/users/generate-usernames")
                     .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories",
+                                "/api/communities",
+                                "/api/categories/{categoryId}",
+                                "/api/communities/{communityId}")
+                        .permitAll()
                         .requestMatchers("/api/categories/**", "/api/communities/**")
-                        .hasRole(RoleName.ADMIN.toString())
+                        .hasAuthority("SCOPE_" + RoleName.ADMIN.name())
                     .requestMatchers(
                         "/v3/api-docs",
                         "/swagger-ui/index.html",
@@ -84,7 +92,8 @@ public class SecurityConfig {
                     .authenticated())
         .oauth2ResourceServer(
             oAuth2ResourceServerConfigurer ->
-                oAuth2ResourceServerConfigurer.jwt(Customizer.withDefaults()))
+                oAuth2ResourceServerConfigurer.jwt(jwtConfigurer ->
+                        jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter())))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .exceptionHandling(
@@ -97,7 +106,20 @@ public class SecurityConfig {
 
   @Bean
   PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    return new CustomPasswordEncoder();
+  }
+
+  @Bean
+  public JwtAuthenticationConverter jwtAuthenticationConverter() {
+    JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
+
+    return jwtAuthenticationConverter;
+  }
+
+  @Bean
+  public JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter() {
+      return new JwtGrantedAuthoritiesConverter();
   }
 
   @Bean
