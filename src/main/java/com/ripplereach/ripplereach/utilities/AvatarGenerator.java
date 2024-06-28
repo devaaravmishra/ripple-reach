@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.utilities;
 
+import com.ripplereach.ripplereach.exceptions.RippleReachException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +27,7 @@ public class AvatarGenerator {
 
     public static String generateRandomAvatar() {
         if (avatarList == null || avatarList.isEmpty()) {
-            throw new IllegalStateException("Avatar list has not been initialized or is empty. Please initialize AvatarConfig first.");
+            throw new RippleReachException("Avatar list has not been initialized or is empty. Please initialize AvatarConfig first.");
         }
 
         int index = random.nextInt(avatarList.size());
