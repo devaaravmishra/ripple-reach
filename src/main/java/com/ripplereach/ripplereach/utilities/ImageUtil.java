@@ -1,45 +1,46 @@
 package com.ripplereach.ripplereach.utilities;
 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
+import java.io.IOException;
+import java.util.Iterator;
 
 public class ImageUtil {
 
-    public static byte[] compressImage(byte[] data) {
-        Deflater deflater = new Deflater();
-        deflater.setLevel(Deflater.BEST_COMPRESSION);
-        deflater.setInput(data);
-        deflater.finish();
+    public static byte[] compressImage(byte[] imageData, String formatName) throws IOException {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(imageData);
+        BufferedImage image = ImageIO.read(inputStream);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
-        byte[] tmp = new byte[4*1024];
-        while (!deflater.finished()) {
-            int size = deflater.deflate(tmp);
-            outputStream.write(tmp, 0, size);
-        }
-        try {
-            outputStream.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return outputStream.toByteArray();
-    }
+        ByteArrayOutputStream compressedOutputStream = new ByteArrayOutputStream();
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(formatName);
 
-    public static byte[] decompressImage(byte[] data) {
-        Inflater inflater = new Inflater();
-        inflater.setInput(data);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
-        byte[] tmp = new byte[4*1024];
-        try {
-            while (!inflater.finished()) {
-                int count = inflater.inflate(tmp);
-                outputStream.write(tmp, 0, count);
+        if (!writers.hasNext()) {
+            return imageData;
+        }
+
+        ImageWriter writer = writers.next();
+        ImageOutputStream ios = ImageIO.createImageOutputStream(compressedOutputStream);
+        writer.setOutput(ios);
+
+        ImageWriteParam param = writer.getDefaultWriteParam();
+
+        if ("jpg".equalsIgnoreCase(formatName) || "jpeg".equalsIgnoreCase(formatName)) {
+            if (param.canWriteCompressed()) {
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionQuality(0.5f);
             }
-            outputStream.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
-        return outputStream.toByteArray();
+
+        writer.write(null, new IIOImage(image, null, null), param);
+        ios.close();
+        writer.dispose();
+
+        return compressedOutputStream.toByteArray();
     }
 }
