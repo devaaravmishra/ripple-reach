@@ -5,9 +5,9 @@ import com.ripplereach.ripplereach.models.Comment;
 import com.ripplereach.ripplereach.models.Post;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.repositories.CommentRepository;
-import com.ripplereach.ripplereach.repositories.PostRepository;
-import com.ripplereach.ripplereach.repositories.UserRepository;
 import com.ripplereach.ripplereach.services.CommentService;
+import com.ripplereach.ripplereach.services.PostService;
+import com.ripplereach.ripplereach.services.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,23 +22,25 @@ import java.util.List;
 @Slf4j
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
-    private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final PostService postService;
+    private final UserService userService;
 
     @Override
     @Transactional
     public Comment createComment(Long postId, Long userId, String content) {
         try {
-            Post post = postRepository.findById(postId)
-                    .orElseThrow(() -> new EntityNotFoundException("Post not found with id: " + postId));
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+            Post post = postService.findById(postId);
+            User user = userService.findById(userId);
 
             Comment comment = Comment.builder()
                     .post(post)
                     .author(user)
                     .content(content)
                     .build();
+
+
+            post.setTotalComments(post.getTotalComments() + 1);
+            postService.updatePostTotalComments(post);
 
             Comment commentResponse = commentRepository.save(comment);
 
@@ -86,6 +88,11 @@ public class CommentServiceImpl implements CommentService {
         try {
             Comment comment = commentRepository.findById(commentId)
                     .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
+
+            // Decrement the comment count in the post
+            Post post = comment.getPost();
+            post.setTotalComments(Math.max(post.getTotalComments() - 1, 0));
+            postService.updatePostTotalComments(post);
 
             commentRepository.delete(comment);
 

@@ -3,16 +3,23 @@ package com.ripplereach.ripplereach.services.impl;
 import com.ripplereach.ripplereach.dtos.PostRequestDto;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
 import com.ripplereach.ripplereach.models.Post;
+import com.ripplereach.ripplereach.models.PostAttachment;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.repositories.PostRepository;
-import com.ripplereach.ripplereach.repositories.UserRepository;
+import com.ripplereach.ripplereach.services.AuthService;
+import com.ripplereach.ripplereach.services.ImageService;
 import com.ripplereach.ripplereach.services.PostService;
+import com.ripplereach.ripplereach.services.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,19 +28,43 @@ import java.util.List;
 @AllArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final AuthService authService;
+    private final ImageService imageService;
 
     @Override
     @Transactional
     public Post create(PostRequestDto postRequestDto) {
         try {
-            User author = userRepository.findById(postRequestDto.getAuthorId())
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            User author = userService.findById(postRequestDto.getAuthorId());
+
+            // check whether the authenticated user is creating the post
+            Jwt principal = (Jwt) authService.getAuthenticatedUser().getPrincipal();
+            if (!principal.getSubject().equals(author.getPhone())) {
+                log.error("Unable to create a post, access forbidden attempted by userId: {}",
+                        postRequestDto.getAuthorId());
+                throw new AccessDeniedException("Unable to create a post, access forbidden");
+            }
+
+            List<PostAttachment> attachments = new ArrayList<>();
+            if (postRequestDto.getAttachments() != null) {
+                for (MultipartFile file : postRequestDto.getAttachments()) {
+                    String fileName = file.getOriginalFilename();
+                    String fileUrl = saveFile(file); // Implement this method to save the file and return its URL
+                    PostAttachment attachment = PostAttachment.builder()
+                        .fileName(fileName)
+                        .url(fileUrl)
+                        .build();
+                    attachments.add(attachment);
+                }
+            }
 
             Post post = Post.builder()
                     .title(postRequestDto.getTitle())
                     .content(postRequestDto.getContent())
                     .author(author)
+                    .attachments(attachments)
+                    .link(postRequestDto.getLink())
                     .build();
 
             Post savedPost = postRepository.save(post);
@@ -42,13 +73,16 @@ public class PostServiceImpl implements PostService {
                     savedPost.getId(), postRequestDto.getAuthorId());
 
             return savedPost;
-        } catch (EntityNotFoundException ex) {
-            log.error("User not found with id: {}", postRequestDto.getAuthorId());
+        } catch (EntityNotFoundException | AccessDeniedException ex) {
             throw ex;
         } catch (RuntimeException ex) {
-            log.error("Error while creating post for user id: {}", postRequestDto.getAuthorId());
+            log.error("Error while creating post for user id: {}", postRequestDto.getAuthorId(), ex);
             throw new RippleReachException("Error while creating post!");
         }
+    }
+
+    private String saveFile(MultipartFile file) {
+        return imageService.saveImage(file);
     }
 
     @Override
@@ -108,6 +142,18 @@ public class PostServiceImpl implements PostService {
         } catch (RuntimeException ex) {
             log.error("Error while deleting post with id: {}", postId);
             throw new RippleReachException("Error while deleting post!");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updatePostTotalComments(Post post) {
+        try {
+            postRepository.save(post);
+            log.info("Post with id {} comment count updated to {}", post.getId(), post.getTotalComments());
+        } catch (RuntimeException ex) {
+            log.error("Error while updating comment count for post with id: {}", post.getId());
+            throw new RippleReachException("Error while updating comment count for post!");
         }
     }
 }

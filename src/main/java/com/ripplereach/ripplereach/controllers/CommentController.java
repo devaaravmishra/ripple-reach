@@ -8,12 +8,13 @@ import com.ripplereach.ripplereach.services.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,9 +34,11 @@ public class CommentController {
     @Operation(
             summary = "Create Comment",
             description = "Creates a new comment.",
-            requestBody = @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CommentRequestDto.class)))
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = CommentRequestDto.class)))
     )
-    public ResponseEntity<CommentResponseDto> createComment(@RequestBody CommentRequestDto commentRequestDto) {
+    public ResponseEntity<CommentResponseDto>
+    createComment(@Valid @RequestBody CommentRequestDto commentRequestDto) {
         Comment comment = commentService.createComment(
                 commentRequestDto.getPostId(),
                 commentRequestDto.getUserId(),
@@ -52,7 +55,7 @@ public class CommentController {
             summary = "Update Comment",
             description = "Updates an existing comment by its ID.",
             parameters = @Parameter(name = "commentId", description = "ID of the comment to update", required = true),
-            requestBody = @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
     )
     public ResponseEntity<CommentResponseDto> updateComment(
             @PathVariable Long commentId,
@@ -77,6 +80,7 @@ public class CommentController {
     }
 
     @GetMapping("/post/{postId}")
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(
             summary = "Get Comments by Post ID",
             description = "Retrieves all comments for a specific post by its ID.",
@@ -93,6 +97,7 @@ public class CommentController {
     }
 
     @GetMapping("/user/{userId}")
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(
             summary = "Get Comments by User ID",
             description = "Retrieves all comments by a specific user by their ID.",

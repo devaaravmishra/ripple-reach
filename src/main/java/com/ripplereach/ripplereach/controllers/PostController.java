@@ -57,6 +57,7 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(
             summary = "Get Post by ID",
             description = "Retrieves the post by its ID.",

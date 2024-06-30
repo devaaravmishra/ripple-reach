@@ -11,4 +11,5 @@ public interface PostService {
     Post findById(Long postId);
     Post update(Long postId, PostRequestDto postRequestDto);
     void delete(Long postId);
+    void updatePostTotalComments(Post post);
 }
