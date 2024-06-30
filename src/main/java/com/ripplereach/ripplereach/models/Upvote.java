@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,13 +17,16 @@ public class Upvote {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
+    @JsonIgnore
     private Post post;
 
     @ManyToOne
     @JoinColumn(name = "comment_id")
+    @JsonIgnore
     private Comment comment;
 }
