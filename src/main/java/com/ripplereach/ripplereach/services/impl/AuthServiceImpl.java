@@ -94,6 +94,16 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
+  public Authentication getAuthenticatedUser() {
+    try {
+      return SecurityContextHolder.getContext().getAuthentication();
+    } catch (RuntimeException ex) {
+      log.error("Error while getting authenticated user");
+      throw new RippleReachException("Error while getting authenticated user");
+    }
+  }
+
+  @Override
   @Transactional(readOnly = true)
   public AuthResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequest) {
     try {
