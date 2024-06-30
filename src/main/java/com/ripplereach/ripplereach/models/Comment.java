@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,7 +30,11 @@ public class Comment {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
+    @Column(nullable = false)
+    private Long totalUpvotes = 0L;
+
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<Upvote> upvotes = new HashSet<>();
 
     @Column(nullable = false, updatable = false)
@@ -47,5 +52,6 @@ public class Comment {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
+        totalUpvotes = (long) upvotes.size();
     }
 }

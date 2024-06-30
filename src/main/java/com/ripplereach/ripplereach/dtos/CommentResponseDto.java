@@ -1,13 +1,14 @@
 package com.ripplereach.ripplereach.dtos;
 
-import com.ripplereach.ripplereach.models.Post;
-import com.ripplereach.ripplereach.models.User;
+import com.ripplereach.ripplereach.models.Upvote;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -16,8 +17,10 @@ import java.time.Instant;
 public class CommentResponseDto {
     private Long id;
     private String content;
-    private Post post;
-    private User author;
+    private PostResponseDto post;
+    private UserResponseDto author;
+    private Long totalUpvotes;
+    private Set<Upvote> upvotes = new HashSet<>();
     private Instant createdAt;
     private Instant updatedAt;
 }

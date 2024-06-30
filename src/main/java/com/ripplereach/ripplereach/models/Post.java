@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,19 +25,26 @@ public class Post {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
-    
+
+    private String link;
+
+    @Column(nullable = false)
+    private Long totalComments = 0L;
+
+    @Column(nullable = false)
+    private Long totalUpvotes = 0L;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
+    @JsonIgnore
     private User author;
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "post_attachment_id", referencedColumnName = "id")
     private List<PostAttachment> attachments;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<Upvote> upvotes = new HashSet<>();
 
     @Column(nullable = false, updatable = false)
@@ -54,5 +62,6 @@ public class Post {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
+        totalUpvotes = (long) upvotes.size();
     }
 }
