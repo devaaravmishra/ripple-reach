@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryUpdateRequestDto {
+public class CategoryUpdateRequest {
     @Size(message = Messages.CATEGORY_NAME_SIZE, min = 3, max = 25)
     private String name;
 

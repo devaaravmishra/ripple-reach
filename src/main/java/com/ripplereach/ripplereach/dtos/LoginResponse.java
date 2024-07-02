@@ -1,6 +1,6 @@
 package com.ripplereach.ripplereach.dtos;
 
-import java.time.Instant;
+import com.ripplereach.ripplereach.models.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,9 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponseDto {
-  private String token;
-  private String refreshToken;
-  private Instant expiresAt;
-  private String username;
+public class LoginResponse {
+  private String message;
+  private User user;
+  private AuthResponse auth;
 }

@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommunityResponseDto {
+public class CommunityResponse {
     private Community community;
 }

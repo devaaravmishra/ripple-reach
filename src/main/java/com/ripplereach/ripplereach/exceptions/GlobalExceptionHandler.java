@@ -1,7 +1,7 @@
 package com.ripplereach.ripplereach.exceptions;
 
 import com.ripplereach.ripplereach.constants.Messages;
-import com.ripplereach.ripplereach.dtos.ErrorResponseDto;
+import com.ripplereach.ripplereach.dtos.ErrorResponse;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.apache.tomcat.util.http.fileupload.impl.InvalidContentTypeException;
@@ -26,7 +26,7 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ErrorResponseDto> handleValidationExceptions(
+  public ResponseEntity<ErrorResponse> handleValidationExceptions(
       MethodArgumentNotValidException ex) {
     Map<String, String> errors = new HashMap<>();
     ex.getBindingResult()
@@ -45,8 +45,8 @@ public class GlobalExceptionHandler {
               errors.put(fieldName, errorMessage);
             });
 
-    ErrorResponseDto responseDto =
-        ErrorResponseDto.builder()
+    ErrorResponse responseDto =
+        ErrorResponse.builder()
             .status(HttpStatus.BAD_REQUEST.value())
             .type(String.valueOf(HttpStatus.BAD_REQUEST))
             .message(Messages.VALIDATION_FAILED)
@@ -57,10 +57,10 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<ErrorResponseDto> handleRequestBodyNotReadableException(
+  public ResponseEntity<ErrorResponse> handleRequestBodyNotReadableException(
       HttpMessageNotReadableException ex) {
-    ErrorResponseDto errorResponse =
-        ErrorResponseDto.builder()
+    ErrorResponse errorResponse =
+        ErrorResponse.builder()
             .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
             .type(String.valueOf(HttpStatus.UNPROCESSABLE_ENTITY))
             .title(Messages.UNPROCESSABLE_ENTITY)
@@ -71,8 +71,8 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(InvalidContentTypeException.class)
-  public ResponseEntity<ErrorResponseDto> handleInvalidContentTypeException(InvalidContentTypeException ex) {
-    ErrorResponseDto errorResponseDto = ErrorResponseDto
+  public ResponseEntity<ErrorResponse> handleInvalidContentTypeException(InvalidContentTypeException ex) {
+    ErrorResponse errorResponse = ErrorResponse
             .builder()
             .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
             .type(HttpStatus.UNPROCESSABLE_ENTITY.toString())
@@ -80,12 +80,12 @@ public class GlobalExceptionHandler {
             .message(ex.getMessage())
             .build();
 
-    return new ResponseEntity<>(errorResponseDto, HttpStatus.UNPROCESSABLE_ENTITY);
+    return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-  public ResponseEntity<ErrorResponseDto> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
-    ErrorResponseDto errorResponseDto = ErrorResponseDto
+  public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    ErrorResponse errorResponse = ErrorResponse
             .builder()
             .status(HttpStatus.BAD_REQUEST.value())
             .type(HttpStatus.BAD_REQUEST.toString())
@@ -95,14 +95,14 @@ public class GlobalExceptionHandler {
                     Objects.requireNonNull(ex.getRequiredType()).getSimpleName()))
             .build();
 
-    return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-  public ResponseEntity<ErrorResponseDto> handleHttpMediaTypeNotSupportedException(
+  public ResponseEntity<ErrorResponse> handleHttpMediaTypeNotSupportedException(
       HttpMediaTypeNotSupportedException ex) {
-    ErrorResponseDto errorResponse =
-        ErrorResponseDto.builder()
+    ErrorResponse errorResponse =
+        ErrorResponse.builder()
             .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
             .type(String.valueOf(HttpStatus.UNPROCESSABLE_ENTITY))
             .title(Messages.UNPROCESSABLE_ENTITY)
@@ -113,10 +113,10 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(EntityNotFoundException.class)
-  public ResponseEntity<ErrorResponseDto> handleEntityNotFoundException(
+  public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
       EntityNotFoundException ex) {
-    ErrorResponseDto errorResponse =
-        ErrorResponseDto.builder()
+    ErrorResponse errorResponse =
+        ErrorResponse.builder()
             .status(HttpStatus.NOT_FOUND.value())
             .type(String.valueOf(HttpStatus.NOT_FOUND))
             .title(Messages.ENTITY_NOT_FOUND)
@@ -127,8 +127,8 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(AccessDeniedException ex) {
-    ErrorResponseDto errorResponseDto = ErrorResponseDto
+  public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+    ErrorResponse errorResponse = ErrorResponse
             .builder()
             .status(HttpStatus.FORBIDDEN.value())
             .type(String.valueOf(HttpStatus.FORBIDDEN))
@@ -136,12 +136,12 @@ public class GlobalExceptionHandler {
             .message(ex.getMessage())
             .build();
 
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponseDto);
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-  public ResponseEntity<ErrorResponseDto> handleMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
-    ErrorResponseDto errorResponseDto = ErrorResponseDto
+  public ResponseEntity<ErrorResponse> handleMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+    ErrorResponse errorResponse = ErrorResponse
             .builder()
             .status(HttpStatus.METHOD_NOT_ALLOWED.value())
             .type(String.valueOf(HttpStatus.METHOD_NOT_ALLOWED))
@@ -149,14 +149,14 @@ public class GlobalExceptionHandler {
             .message(ex.getMessage())
             .build();
 
-    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorResponseDto);
+    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorResponse);
   }
 
   @ExceptionHandler(EntityExistsException.class)
-  public ResponseEntity<ErrorResponseDto> handleEntityAlreadyExistsException(
+  public ResponseEntity<ErrorResponse> handleEntityAlreadyExistsException(
       EntityExistsException ex) {
-    ErrorResponseDto errorResponse =
-        ErrorResponseDto.builder()
+    ErrorResponse errorResponse =
+        ErrorResponse.builder()
             .status(HttpStatus.CONFLICT.value())
             .type(String.valueOf(HttpStatus.CONFLICT))
             .title(Messages.ENTITY_ALREADY_EXISTS)
@@ -167,9 +167,9 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(RippleReachException.class)
-  public ResponseEntity<ErrorResponseDto> handleGenericException(Exception ex) {
-    ErrorResponseDto errorResponse =
-        ErrorResponseDto.builder()
+  public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+    ErrorResponse errorResponse =
+        ErrorResponse.builder()
             .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
             .type(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR))
             .title(Messages.UNEXPECTED_ERROR)

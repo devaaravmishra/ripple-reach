@@ -6,10 +6,10 @@ import org.springframework.security.core.Authentication;
 
 public interface AuthService {
   User register(User user);
-  LoginResponseDto login(LoginRequestDto loginRequestDto);
-  void logout(LogoutRequestDto logoutRequestDto);
-  AuthResponseDto generateAuthenticationToken(User user);
+  LoginResponse login(LoginRequest loginRequest);
+  void logout(LogoutRequest logoutRequest);
+  AuthResponse generateAuthenticationToken(User user);
   Authentication getAuthenticatedUser();
-  AuthResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequestDto);
+  AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
   String verifyIdToken(String idToken);
 }

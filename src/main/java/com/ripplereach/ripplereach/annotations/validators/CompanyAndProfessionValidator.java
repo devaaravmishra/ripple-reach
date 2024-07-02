@@ -1,14 +1,14 @@
 package com.ripplereach.ripplereach.annotations.validators;
 
 import com.ripplereach.ripplereach.annotations.CompanyAndProfession;
-import com.ripplereach.ripplereach.dtos.RegisterRequestDto;
+import com.ripplereach.ripplereach.dtos.RegisterRequest;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 public class CompanyAndProfessionValidator
-    implements ConstraintValidator<CompanyAndProfession, RegisterRequestDto> {
+    implements ConstraintValidator<CompanyAndProfession, RegisterRequest> {
   @Override
-  public boolean isValid(RegisterRequestDto dto, ConstraintValidatorContext context) {
+  public boolean isValid(RegisterRequest dto, ConstraintValidatorContext context) {
     boolean companyAndNotProfession = dto.getCompany() != null && dto.getCompany().isEmpty();
 
     if (companyAndNotProfession) {

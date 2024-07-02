@@ -213,6 +213,8 @@ public class UserServiceImpl implements UserService {
             log.info("User with userId {}, username {} is soft deleted.",
                     deletedUser.getId(), deletedUser.getUsername()
             );
+        } catch (EntityNotFoundException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             log.error("Error while deleting user with phone: {}", phone, ex);
             throw new RippleReachException("Error while deleting user!");
@@ -296,7 +298,6 @@ public class UserServiceImpl implements UserService {
             }
 
             Optional<User> userEntity = userRepository.findByPhone(phone);
-
             if (userEntity.isEmpty() || isUserSoftDeleted(userEntity.get())) {
                 log.error("User with this phone doesn't exists!");
                 throw new EntityNotFoundException("Can't find user with phone: " + phone);
@@ -306,8 +307,8 @@ public class UserServiceImpl implements UserService {
         } catch (EntityNotFoundException ex) {
             throw ex;
         } catch (RuntimeException ex) {
-            log.error("Error while finding user with phone {}", phone);
-            throw new RippleReachException("Error finding user with phone: " + phone);
+            log.error("Error while finding user with requested phone");
+            throw new RippleReachException("Error finding user with required phone");
         }
     }
 

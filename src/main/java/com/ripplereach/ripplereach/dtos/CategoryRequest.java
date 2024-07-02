@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryRequestDto {
+public class CategoryRequest {
     @NotBlank(message = Messages.CATEGORY_NAME_REQUIRED)
     @Size(message = Messages.CATEGORY_NAME_SIZE, min = 3, max = 50)
     private String name;

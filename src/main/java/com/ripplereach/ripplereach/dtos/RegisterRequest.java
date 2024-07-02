@@ -13,7 +13,7 @@ import lombok.*;
 @UniversityOrCompany
 @CompanyAndProfession
 @NoArgsConstructor
-public class RegisterRequestDto {
+public class RegisterRequest {
   @NotBlank(message = Messages.ID_TOKEN_REQUIRED)
   private String idToken;
 

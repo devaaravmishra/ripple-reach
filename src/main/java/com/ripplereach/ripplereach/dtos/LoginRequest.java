@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequestDto {
+public class LoginRequest {
   @NotBlank(message = Messages.ID_TOKEN_REQUIRED)
   private String idToken;
 

@@ -11,13 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class NotificationRequestDto {
-    @NotBlank(message = Messages.DEVICE_TOKEN_REQUIRED)
-    private String deviceToken;
+public class LogoutRequest {
+  @NotBlank(message = Messages.REFRESH_TOKEN_REQUIRED)
+  private String refreshToken;
 
-    @NotBlank(message = Messages.TITLE_REQUIRED)
-    private String title;
-
-    @NotBlank(message = Messages.BODY_REQUIRED)
-    private String body;
+  private String username;
 }

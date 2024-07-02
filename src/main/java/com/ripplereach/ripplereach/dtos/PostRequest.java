@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostRequestDto {
+public class PostRequest {
     @NotBlank
     private String title;
 
@@ -25,6 +25,9 @@ public class PostRequestDto {
 
     @NotNull
     private Long authorId;
+
+    @NotNull
+    private Long communityId;
 
     private List<MultipartFile> attachments;
     @Pattern(regexp = "[(http(s)?):\\/\\/(www\\.)?a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)",

@@ -41,22 +41,22 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   @Transactional
-  public LoginResponseDto login(LoginRequestDto loginRequestDto) {
-      User userEntity = userService.findByPhone(loginRequestDto.getPhone());
-      AuthResponseDto authResponseDto = generateAuthenticationToken(userEntity);
+  public LoginResponse login(LoginRequest loginRequest) {
+      User userEntity = userService.findByPhone(loginRequest.getPhone());
+      AuthResponse authResponse = generateAuthenticationToken(userEntity);
 
-      return LoginResponseDto.builder()
+      return LoginResponse.builder()
           .message("Success")
           .user(userEntity)
-          .auth(authResponseDto)
+          .auth(authResponse)
           .build();
   }
 
   @Override
   @Transactional
-  public void logout(LogoutRequestDto logoutRequestDto) {
+  public void logout(LogoutRequest logoutRequest) {
     RefreshToken refreshToken = refreshTokenService
-            .findByToken(logoutRequestDto.getRefreshToken());
+            .findByToken(logoutRequest.getRefreshToken());
 
     refreshTokenService.deleteRefreshToken(refreshToken.getToken());
   }
@@ -69,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   @Transactional
-  public AuthResponseDto generateAuthenticationToken(User user) {
+  public AuthResponse generateAuthenticationToken(User user) {
     log.info("Attempting to authenticate user with phone: {}", user.getPhone());
 
     try {
@@ -81,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
       String token = jwtProvider.generateToken(authenticate);
       RefreshToken refreshToken = refreshTokenService.generateRefreshToken();
 
-      return AuthResponseDto.builder()
+      return AuthResponse.builder()
               .token(token)
               .refreshToken(refreshToken.getToken())
               .expiresAt(Instant.ofEpochSecond(jwtProvider.getJwtExpirationInMillis()))
@@ -105,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   @Transactional(readOnly = true)
-  public AuthResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequest) {
+  public AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
     try {
       Authentication authentication = SecurityContextHolder
               .getContext()
@@ -114,7 +114,7 @@ public class AuthServiceImpl implements AuthService {
       refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
       String token = jwtProvider.generateToken(authentication);
 
-      return AuthResponseDto.builder()
+      return AuthResponse.builder()
           .token(token)
           .refreshToken(refreshTokenRequest.getRefreshToken())
           .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))

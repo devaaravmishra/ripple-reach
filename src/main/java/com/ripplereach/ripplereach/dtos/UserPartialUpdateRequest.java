@@ -3,7 +3,6 @@ package com.ripplereach.ripplereach.dtos;
 import com.ripplereach.ripplereach.annotations.CompanyAndProfession;
 import com.ripplereach.ripplereach.annotations.UniversityOrCompany;
 import com.ripplereach.ripplereach.constants.Messages;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,8 +15,7 @@ import lombok.NoArgsConstructor;
 @CompanyAndProfession
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserUpdateRequestDto {
-    @NotBlank(message = Messages.USERNAME_REQUIRED)
+public class UserPartialUpdateRequest {
     @Size(message = Messages.USERNAME_SIZE, min = 3, max = 25)
     private String username;
 
