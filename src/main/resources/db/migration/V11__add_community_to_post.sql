@@ -1,0 +1,5 @@
+ALTER TABLE post
+    ADD community_id BIGINT;
+
+ALTER TABLE post
+    ADD CONSTRAINT FK_POST_ON_COMMUNITY FOREIGN KEY (community_id) REFERENCES community (id);

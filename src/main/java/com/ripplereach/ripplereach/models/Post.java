@@ -26,6 +26,10 @@ public class Post {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "community_id", referencedColumnName = "id")
+    private Community community;
+
     private String link;
 
     @Column(nullable = false)
