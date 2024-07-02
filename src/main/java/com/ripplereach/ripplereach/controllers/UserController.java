@@ -1,8 +1,8 @@
 package com.ripplereach.ripplereach.controllers;
 
-import com.ripplereach.ripplereach.dtos.UserPartialUpdateRequestDto;
-import com.ripplereach.ripplereach.dtos.UserResponseDto;
-import com.ripplereach.ripplereach.dtos.UserUpdateRequestDto;
+import com.ripplereach.ripplereach.dtos.UserPartialUpdateRequest;
+import com.ripplereach.ripplereach.dtos.UserResponse;
+import com.ripplereach.ripplereach.dtos.UserUpdateRequest;
 import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.mappers.UserMapper;
 import com.ripplereach.ripplereach.models.User;
@@ -27,7 +27,7 @@ import java.util.List;
 public class UserController {
   private final UserService userService;
   private final UserMapper userMapper;
-  private final Mapper<User, UserResponseDto> userResponseMapper;
+  private final Mapper<User, UserResponse> userResponseMapper;
 
   @GetMapping("/generate-usernames")
   @Operation(
@@ -56,11 +56,11 @@ public class UserController {
           summary = "Get User by Username",
           description = "Retrieves a user by their username."
   )
-  public ResponseEntity<UserResponseDto> getUser(@PathVariable String username) {
+  public ResponseEntity<UserResponse> getUser(@PathVariable String username) {
     User userEntity = userService.findByUsername(username);
-    UserResponseDto userResponseDto = userResponseMapper.mapTo(userEntity);
+    UserResponse userResponse = userResponseMapper.mapTo(userEntity);
 
-    return new ResponseEntity<>(userResponseDto, HttpStatus.OK);
+    return new ResponseEntity<>(userResponse, HttpStatus.OK);
   }
 
   @PutMapping("/{userId}")
@@ -69,13 +69,13 @@ public class UserController {
           summary = "Update User",
           description = "Updates an existing user by their ID."
   )
-  public ResponseEntity<UserResponseDto> updateUser
-          (@PathVariable Long userId, @Valid @RequestBody UserUpdateRequestDto userUpdateRequestDto) {
-    User userEntity = userMapper.mapToUser(userUpdateRequestDto);
+  public ResponseEntity<UserResponse> updateUser
+          (@PathVariable Long userId, @Valid @RequestBody UserUpdateRequest userUpdateRequest) {
+    User userEntity = userMapper.mapToUser(userUpdateRequest);
     User userResponseEntity = userService.update(userId, userEntity);
 
-    UserResponseDto userResponseDto = userResponseMapper.mapTo(userResponseEntity);
-    return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
+    UserResponse userResponse = userResponseMapper.mapTo(userResponseEntity);
+    return ResponseEntity.status(HttpStatus.OK).body(userResponse);
   }
 
   @PatchMapping(path = "/{userId}")
@@ -84,13 +84,13 @@ public class UserController {
           summary = "Partial Update User",
           description = "Partially updates an existing user by their ID."
   )
-  public ResponseEntity<UserResponseDto> partialUpdateUser
-          (@PathVariable Long userId, @RequestBody UserPartialUpdateRequestDto userPartialUpdateRequestDto) {
-    User userEntity = userMapper.mapToUser(userPartialUpdateRequestDto);
+  public ResponseEntity<UserResponse> partialUpdateUser
+          (@PathVariable Long userId, @RequestBody UserPartialUpdateRequest userPartialUpdateRequest) {
+    User userEntity = userMapper.mapToUser(userPartialUpdateRequest);
     User userResponseEntity = userService.partialUpdate(userId, userEntity);
 
-    UserResponseDto userResponseDto = userResponseMapper.mapTo(userResponseEntity);
-    return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
+    UserResponse userResponse = userResponseMapper.mapTo(userResponseEntity);
+    return ResponseEntity.status(HttpStatus.OK).body(userResponse);
   }
 
   @DeleteMapping("/phone/{phone}")

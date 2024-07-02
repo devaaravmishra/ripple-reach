@@ -1,15 +1,16 @@
 package com.ripplereach.ripplereach.services;
 
-import com.ripplereach.ripplereach.dtos.PostRequestDto;
+import com.ripplereach.ripplereach.dtos.PostRequest;
 import com.ripplereach.ripplereach.models.Post;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface PostService {
-    Post create(PostRequestDto postRequestDto);
-    List<Post> getAll();
+    Post create(PostRequest postRequest);
+    Page<Post> findAll(Pageable pageable);
+    Page<Post> findAllByCommunity(Long communityId, Pageable pageable);
     Post findById(Long postId);
-    Post update(Long postId, PostRequestDto postRequestDto);
+    Post update(Long postId, PostRequest postRequest);
     void delete(Long postId);
     void updatePostTotalComments(Post post);
 }

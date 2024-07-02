@@ -1,6 +1,6 @@
 package com.ripplereach.ripplereach.services.impl;
 
-import com.ripplereach.ripplereach.dtos.PostRequestDto;
+import com.ripplereach.ripplereach.dtos.PostRequest;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
 import com.ripplereach.ripplereach.models.Post;
 import com.ripplereach.ripplereach.models.PostAttachment;
@@ -13,6 +13,8 @@ import com.ripplereach.ripplereach.services.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -34,21 +36,21 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public Post create(PostRequestDto postRequestDto) {
+    public Post create(PostRequest postRequest) {
         try {
-            User author = userService.findById(postRequestDto.getAuthorId());
+            User author = userService.findById(postRequest.getAuthorId());
 
             // check whether the authenticated user is creating the post
             Jwt principal = (Jwt) authService.getAuthenticatedUser().getPrincipal();
             if (!principal.getSubject().equals(author.getPhone())) {
                 log.error("Unable to create a post, access forbidden attempted by userId: {}",
-                        postRequestDto.getAuthorId());
+                        postRequest.getAuthorId());
                 throw new AccessDeniedException("Unable to create a post, access forbidden");
             }
 
             List<PostAttachment> attachments = new ArrayList<>();
-            if (postRequestDto.getAttachments() != null) {
-                for (MultipartFile file : postRequestDto.getAttachments()) {
+            if (postRequest.getAttachments() != null) {
+                for (MultipartFile file : postRequest.getAttachments()) {
                     String fileName = file.getOriginalFilename();
                     String fileUrl = saveFile(file); // Implement this method to save the file and return its URL
                     PostAttachment attachment = PostAttachment.builder()
@@ -60,23 +62,23 @@ public class PostServiceImpl implements PostService {
             }
 
             Post post = Post.builder()
-                    .title(postRequestDto.getTitle())
-                    .content(postRequestDto.getContent())
+                    .title(postRequest.getTitle())
+                    .content(postRequest.getContent())
                     .author(author)
                     .attachments(attachments)
-                    .link(postRequestDto.getLink())
+                    .link(postRequest.getLink())
                     .build();
 
             Post savedPost = postRepository.save(post);
 
             log.info("Post with id {} created successfully for user id {}",
-                    savedPost.getId(), postRequestDto.getAuthorId());
+                    savedPost.getId(), postRequest.getAuthorId());
 
             return savedPost;
         } catch (EntityNotFoundException | AccessDeniedException ex) {
             throw ex;
         } catch (RuntimeException ex) {
-            log.error("Error while creating post for user id: {}", postRequestDto.getAuthorId(), ex);
+            log.error("Error while creating post for user id: {}", postRequest.getAuthorId(), ex);
             throw new RippleReachException("Error while creating post!");
         }
     }
@@ -87,9 +89,19 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Post> getAll() {
+    public Page<Post> findAll(Pageable pageable) {
         try {
-            return postRepository.findAll();
+            return postRepository.findAll(pageable);
+        } catch (RuntimeException ex) {
+            log.error("Error while retrieving all posts");
+            throw new RippleReachException("Error while retrieving all posts!");
+        }
+    }
+
+    @Override
+    public Page<Post> findAllByCommunity(Long communityId, Pageable pageable) {
+        try {
+            return postRepository.findAllByCommunityId(communityId, pageable);
         } catch (RuntimeException ex) {
             log.error("Error while retrieving all posts");
             throw new RippleReachException("Error while retrieving all posts!");
@@ -113,11 +125,11 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public Post update(Long postId, PostRequestDto postRequestDto) {
+    public Post update(Long postId, PostRequest postRequest) {
         try {
             Post post = findById(postId);
-            post.setTitle(postRequestDto.getTitle());
-            post.setContent(postRequestDto.getContent());
+            post.setTitle(postRequest.getTitle());
+            post.setContent(postRequest.getContent());
 
             Post updatedPost = postRepository.save(post);
 

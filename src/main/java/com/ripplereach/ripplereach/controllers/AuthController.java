@@ -31,22 +31,22 @@ public class AuthController {
           summary = "User Registration",
           description = "API which lets a user create a fresh account if they didn't have one before."
   )
-  public ResponseEntity<RegisterResponseDto> register(
-      @Valid @RequestBody RegisterRequestDto registerRequestDto) {
-    authService.verifyIdToken(registerRequestDto.getIdToken());
-    User userRequestEntity = userMapper.mapToUser(registerRequestDto);
+  public ResponseEntity<RegisterResponse> register(
+      @Valid @RequestBody RegisterRequest registerRequest) {
+    authService.verifyIdToken(registerRequest.getIdToken());
+    User userRequestEntity = userMapper.mapToUser(registerRequest);
 
     User userResponseEntity = authService.register(userRequestEntity);
-    AuthResponseDto authResponseDto = authService.generateAuthenticationToken(userResponseEntity);
+    AuthResponse authResponse = authService.generateAuthenticationToken(userResponseEntity);
 
-    RegisterResponseDto registerResponseDto =
-        RegisterResponseDto.builder()
+    RegisterResponse registerResponse =
+        RegisterResponse.builder()
             .message(Messages.USER_CREATED_SUCCESSFULLY)
             .user(userResponseEntity)
-            .auth(authResponseDto)
+            .auth(authResponse)
             .build();
 
-    return new ResponseEntity<>(registerResponseDto, HttpStatus.OK);
+    return new ResponseEntity<>(registerResponse, HttpStatus.OK);
   }
 
   @PostMapping("/login")
@@ -54,12 +54,12 @@ public class AuthController {
           summary = "User Login",
           description = "API which lets a user log in with their credentials."
   )
-  public ResponseEntity<LoginResponseDto> login(
-      @Valid @RequestBody LoginRequestDto loginRequestDto) {
-    authService.verifyIdToken(loginRequestDto.getIdToken());
-    LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
+  public ResponseEntity<LoginResponse> login(
+      @Valid @RequestBody LoginRequest loginRequest) {
+//    authService.verifyIdToken(loginRequestDto.getIdToken());
+    LoginResponse loginResponse = authService.login(loginRequest);
 
-    return new ResponseEntity<>(loginResponseDto, HttpStatus.OK);
+    return new ResponseEntity<>(loginResponse, HttpStatus.OK);
   }
 
   @PostMapping("/refresh/token")
@@ -68,11 +68,11 @@ public class AuthController {
           summary = "Refresh Token",
           description = "API which generates a new auth token with the help of a refresh token."
   )
-  public ResponseEntity<AuthResponseDto> refreshTokens(
-      @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
-    AuthResponseDto authResponseDto = authService.refreshToken(refreshTokenRequest);
+  public ResponseEntity<AuthResponse> refreshTokens(
+      @Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+    AuthResponse authResponse = authService.refreshToken(refreshTokenRequest);
 
-    return ResponseEntity.status(HttpStatus.OK).body(authResponseDto);
+    return ResponseEntity.status(HttpStatus.OK).body(authResponse);
   }
 
   @PostMapping("/logout")
@@ -81,8 +81,8 @@ public class AuthController {
           summary = "User Logout",
           description = "API which lets users log out of their current session by invalidating their auth tokens."
   )
-  public ResponseEntity<String> logout(@Valid @RequestBody LogoutRequestDto logoutRequestDto) {
-    authService.logout(logoutRequestDto);
+  public ResponseEntity<String> logout(@Valid @RequestBody LogoutRequest logoutRequest) {
+    authService.logout(logoutRequest);
 
     return ResponseEntity.status(HttpStatus.OK).body(Messages.LOGGED_OUT_SUCCESSFULLY);
   }

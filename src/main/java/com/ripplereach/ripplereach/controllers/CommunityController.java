@@ -12,12 +12,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/communities")
@@ -25,35 +26,36 @@ import java.util.List;
 @AllArgsConstructor
 public class CommunityController {
     private final CommunityService communityService;
-    private final Mapper<Community, CommunityResponseDto> communityResponseMapper;
+    private final Mapper<Community, CommunityResponse> communityResponseMapper;
 
     @GetMapping("/{communityId}")
     @Operation(
             summary = "Get Community by ID",
             description = "Retrieves the community by its ID."
     )
-    public ResponseEntity<CommunityResponseDto> getCommunity(@PathVariable Long communityId) {
+    public ResponseEntity<CommunityResponse> getCommunity(@PathVariable Long communityId) {
       Community community = communityService.findById(communityId);
 
-      CommunityResponseDto communityResponseDto = communityResponseMapper.mapTo(community);
+      CommunityResponse communityResponse = communityResponseMapper.mapTo(community);
 
-      return ResponseEntity.status(HttpStatus.OK).body(communityResponseDto);
+      return ResponseEntity.status(HttpStatus.OK).body(communityResponse);
     }
 
     @GetMapping
     @Operation(
-            summary = "Get All Communities",
-            description = "Retrieves all communities."
+            summary = "Retrieves All Communities",
+            description = "Get all communities."
     )
-    public ResponseEntity<GetAllCommunityResponseDto> getAllCommunities() {
-        List<Community> communities = communityService.getAll();
+    public ResponseEntity<Page<CommunityResponse>> getAllCommunities(
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(defaultValue = "0") Integer offset) {
+        Pageable pageable = PageRequest.of(offset, limit);
+        Page<Community> communities = communityService.findAll(pageable);
 
-        GetAllCommunityResponseDto getAllCommunityResponseDto = GetAllCommunityResponseDto
-                .builder()
-                .communities(communities)
-                .build();
+        Page<CommunityResponse> communityResponse = communities
+                .map(communityResponseMapper::mapTo);
 
-        return ResponseEntity.status(HttpStatus.OK).body(getAllCommunityResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(communityResponse);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -62,15 +64,15 @@ public class CommunityController {
             summary = "Create Community",
             description = "Creates a new community.",
             requestBody = @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                    schema = @Schema(implementation = CommunityRequestDto.class)))
+                    schema = @Schema(implementation = CommunityRequest.class)))
     )
-    public ResponseEntity<CommunityResponseDto> createCommunity
-            (@Valid @ModelAttribute CommunityRequestDto communityRequestDto) {
-        Community community = communityService.create(communityRequestDto);
+    public ResponseEntity<CommunityResponse> createCommunity
+            (@Valid @ModelAttribute CommunityRequest communityRequest) {
+        Community community = communityService.create(communityRequest);
 
-        CommunityResponseDto communityResponseDto = communityResponseMapper.mapTo(community);
+        CommunityResponse communityResponse = communityResponseMapper.mapTo(community);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(communityResponseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(communityResponse);
     }
 
     @PutMapping("/{communityId}")
@@ -79,15 +81,15 @@ public class CommunityController {
             summary = "Update Community",
             description = "Updates an existing community by its ID.",
             requestBody = @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                    schema = @Schema(implementation = CommunityRequestDto.class)))
+                    schema = @Schema(implementation = CommunityRequest.class)))
     )
-    public ResponseEntity<CommunityResponseDto> updateCommunity
-            (@PathVariable Long communityId, @Valid @ModelAttribute CommunityRequestDto communityRequestDto) {
-        Community community = communityService.update(communityId, communityRequestDto);
+    public ResponseEntity<CommunityResponse> updateCommunity
+            (@PathVariable Long communityId, @Valid @ModelAttribute CommunityRequest communityRequest) {
+        Community community = communityService.update(communityId, communityRequest);
 
-        CommunityResponseDto communityResponseDto = communityResponseMapper.mapTo(community);
+        CommunityResponse communityResponse = communityResponseMapper.mapTo(community);
 
-        return ResponseEntity.status(HttpStatus.OK).body(communityResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(communityResponse);
     }
 
     @PatchMapping("/{communityId}")
@@ -96,15 +98,15 @@ public class CommunityController {
             summary = "Partial Update Community",
             description = "Partially updates an existing community by its ID.",
             requestBody = @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                    schema = @Schema(implementation = CommunityUpdateRequestDto.class)))
+                    schema = @Schema(implementation = CommunityUpdateRequest.class)))
     )
-    public ResponseEntity<CommunityResponseDto> partialUpdateCommunity
-            (@PathVariable Long communityId, @Valid @ModelAttribute CommunityUpdateRequestDto communityRequestDto) {
+    public ResponseEntity<CommunityResponse> partialUpdateCommunity
+            (@PathVariable Long communityId, @Valid @ModelAttribute CommunityUpdateRequest communityRequestDto) {
         Community community = communityService.partialUpdate(communityId, communityRequestDto);
 
-        CommunityResponseDto communityResponseDto = communityResponseMapper.mapTo(community);
+        CommunityResponse communityResponse = communityResponseMapper.mapTo(community);
 
-        return ResponseEntity.status(HttpStatus.OK).body(communityResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(communityResponse);
     }
 
     @DeleteMapping("/{communityId}")

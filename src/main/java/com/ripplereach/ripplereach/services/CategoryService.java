@@ -1,13 +1,13 @@
 package com.ripplereach.ripplereach.services;
 
 import com.ripplereach.ripplereach.models.Category;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface CategoryService {
     Category create(String name, String desc);
 
-    List<Category> getAll();
+    Page<Category> findAll(Pageable pageable);
 
     Category findById(Long categoryId);
 

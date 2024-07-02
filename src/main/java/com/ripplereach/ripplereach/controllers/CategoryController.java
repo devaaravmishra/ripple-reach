@@ -1,6 +1,8 @@
 package com.ripplereach.ripplereach.controllers;
 
-import com.ripplereach.ripplereach.dtos.*;
+import com.ripplereach.ripplereach.dtos.CategoryRequest;
+import com.ripplereach.ripplereach.dtos.CategoryResponse;
+import com.ripplereach.ripplereach.dtos.CategoryUpdateRequest;
 import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.Category;
 import com.ripplereach.ripplereach.services.CategoryService;
@@ -9,11 +11,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -21,22 +24,23 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoryController {
     private final CategoryService categoryService;
-    private final Mapper<Category, CategoryResponseDto> categoryResponseMapper;
+    private final Mapper<Category, CategoryResponse> categoryResponseMapper;
 
     @GetMapping
     @Operation(
             summary = "Get All Categories",
             description = "Retrieves all categories."
     )
-    public ResponseEntity<GetAllCategoryResponseDto> getAllCategories() {
-        List<Category> categoryList = categoryService.getAll();
+    public ResponseEntity<Page<CategoryResponse>> getAllCategories(
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(defaultValue = "0") Integer offset) {
+        Pageable pageable = PageRequest.of(offset, limit);
+        Page<Category> categories = categoryService.findAll(pageable);
 
-        GetAllCategoryResponseDto getAllCategoryResponseDto = GetAllCategoryResponseDto
-                .builder()
-                .categories(categoryList)
-                .build();
+        Page<CategoryResponse> response = categories
+                .map(categoryResponseMapper::mapTo);
 
-        return new ResponseEntity<>(getAllCategoryResponseDto, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{categoryId}")
@@ -44,15 +48,15 @@ public class CategoryController {
             summary = "Get Category by ID",
             description = "Retrieves the category by its ID."
     )
-    public ResponseEntity<CategoryResponseDto> getCategory(@PathVariable Long categoryId) {
+    public ResponseEntity<CategoryResponse> getCategory(@PathVariable Long categoryId) {
         Category category = categoryService.findById(categoryId);
 
-        CategoryResponseDto categoryResponseDto = CategoryResponseDto
+        CategoryResponse categoryResponse = CategoryResponse
                 .builder()
                 .category(category)
                 .build();
 
-        return new ResponseEntity<>(categoryResponseDto, HttpStatus.OK);
+        return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
     }
 
     @PostMapping
@@ -61,14 +65,14 @@ public class CategoryController {
             summary = "Create Category",
             description = "Creates a new category."
     )
-    public ResponseEntity<CategoryResponseDto> createCategory(@Valid @RequestBody CategoryRequestDto categoryRequestDto) {
+    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest categoryRequest) {
         Category category = categoryService.create(
-                categoryRequestDto.getName(),
-                categoryRequestDto.getDescription());
+                categoryRequest.getName(),
+                categoryRequest.getDescription());
 
-        CategoryResponseDto categoryResponseDto = categoryResponseMapper.mapTo(category);
+        CategoryResponse categoryResponse = categoryResponseMapper.mapTo(category);
 
-        return new ResponseEntity<>(categoryResponseDto, HttpStatus.CREATED);
+        return new ResponseEntity<>(categoryResponse, HttpStatus.CREATED);
     }
 
     @PutMapping("/{categoryId}")
@@ -77,16 +81,16 @@ public class CategoryController {
             summary = "Update Category",
             description = "Updates an existing category by its ID."
     )
-    public ResponseEntity<CategoryResponseDto> updateCategory(
-            @PathVariable Long categoryId, @Valid @RequestBody CategoryRequestDto categoryRequestDto) {
+    public ResponseEntity<CategoryResponse> updateCategory(
+            @PathVariable Long categoryId, @Valid @RequestBody CategoryRequest categoryRequest) {
         Category category = categoryService.update(
                 categoryId,
-                categoryRequestDto.getName(),
-                categoryRequestDto.getDescription());
+                categoryRequest.getName(),
+                categoryRequest.getDescription());
 
-        CategoryResponseDto categoryResponseDto = categoryResponseMapper.mapTo(category);
+        CategoryResponse categoryResponse = categoryResponseMapper.mapTo(category);
 
-        return new ResponseEntity<>(categoryResponseDto, HttpStatus.OK);
+        return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
     }
 
     @PatchMapping("/{categoryId}")
@@ -95,18 +99,18 @@ public class CategoryController {
             summary = "Partial Update Category",
             description = "Partially updates an existing category by its ID."
     )
-    public ResponseEntity<CategoryResponseDto> partialUpdateCategory(
+    public ResponseEntity<CategoryResponse> partialUpdateCategory(
             @PathVariable Long categoryId,
-            @Valid @RequestBody CategoryUpdateRequestDto categoryUpdateRequestDto) {
+            @Valid @RequestBody CategoryUpdateRequest categoryUpdateRequest) {
 
         Category category = categoryService.partialUpdate(
                 categoryId,
-                categoryUpdateRequestDto.getName(),
-                categoryUpdateRequestDto.getDescription());
+                categoryUpdateRequest.getName(),
+                categoryUpdateRequest.getDescription());
 
-        CategoryResponseDto categoryResponseDto = categoryResponseMapper.mapTo(category);
+        CategoryResponse categoryResponse = categoryResponseMapper.mapTo(category);
 
-        return new ResponseEntity<>(categoryResponseDto, HttpStatus.OK);
+        return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
     }
 
     @DeleteMapping("/{categoryId}")

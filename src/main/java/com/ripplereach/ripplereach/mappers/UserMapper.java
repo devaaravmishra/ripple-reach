@@ -1,8 +1,8 @@
 package com.ripplereach.ripplereach.mappers;
 
-import com.ripplereach.ripplereach.dtos.RegisterRequestDto;
-import com.ripplereach.ripplereach.dtos.UserPartialUpdateRequestDto;
-import com.ripplereach.ripplereach.dtos.UserUpdateRequestDto;
+import com.ripplereach.ripplereach.dtos.RegisterRequest;
+import com.ripplereach.ripplereach.dtos.UserPartialUpdateRequest;
+import com.ripplereach.ripplereach.dtos.UserUpdateRequest;
 import com.ripplereach.ripplereach.enums.RoleName;
 import com.ripplereach.ripplereach.models.Company;
 import com.ripplereach.ripplereach.models.Role;
@@ -15,26 +15,26 @@ import java.util.Set;
 @Component
 public class UserMapper {
 
-  public User mapToUser(RegisterRequestDto registerRequestDto) {
+  public User mapToUser(RegisterRequest registerRequest) {
     User user = new User();
-    user.setUsername(registerRequestDto.getUsername());
+    user.setUsername(registerRequest.getUsername());
 
-    if (registerRequestDto.getCompany() != null) {
-      Company company = Company.builder().name(registerRequestDto.getCompany()).build();
+    if (registerRequest.getCompany() != null) {
+      Company company = Company.builder().name(registerRequest.getCompany()).build();
 
       user.setCompany(company);
-      user.setProfession(registerRequestDto.getProfession());
-    } else if (registerRequestDto.getUniversity() != null) {
-      University university = University.builder().name(registerRequestDto.getUniversity()).build();
+      user.setProfession(registerRequest.getProfession());
+    } else if (registerRequest.getUniversity() != null) {
+      University university = University.builder().name(registerRequest.getUniversity()).build();
 
       user.setUniversity(university);
     }
 
-    user.setPhone(registerRequestDto.getPhone());
+    user.setPhone(registerRequest.getPhone());
 
-    if (registerRequestDto.getRoleName() != null) {
+    if (registerRequest.getRoleName() != null) {
       Role role = Role.builder()
-              .name(RoleName.valueOf(registerRequestDto.getRoleName()))
+              .name(RoleName.valueOf(registerRequest.getRoleName()))
               .build();
 
       user.setRoles(Set.of(role));
@@ -43,17 +43,17 @@ public class UserMapper {
     return user;
   }
 
-  public User mapToUser(UserPartialUpdateRequestDto userPartialUpdateRequestDto) {
+  public User mapToUser(UserPartialUpdateRequest userPartialUpdateRequest) {
     User user = new User();
-    user.setUsername(userPartialUpdateRequestDto.getUsername());
+    user.setUsername(userPartialUpdateRequest.getUsername());
 
-    if (userPartialUpdateRequestDto.getCompany() != null) {
-      Company company = Company.builder().name(userPartialUpdateRequestDto.getCompany()).build();
+    if (userPartialUpdateRequest.getCompany() != null) {
+      Company company = Company.builder().name(userPartialUpdateRequest.getCompany()).build();
 
       user.setCompany(company);
-      user.setProfession(userPartialUpdateRequestDto.getProfession());
-    } else if (userPartialUpdateRequestDto.getUniversity() != null) {
-      University university = University.builder().name(userPartialUpdateRequestDto.getUniversity()).build();
+      user.setProfession(userPartialUpdateRequest.getProfession());
+    } else if (userPartialUpdateRequest.getUniversity() != null) {
+      University university = University.builder().name(userPartialUpdateRequest.getUniversity()).build();
 
       user.setUniversity(university);
     }
@@ -61,17 +61,17 @@ public class UserMapper {
     return user;
   }
 
-  public User mapToUser(UserUpdateRequestDto userUpdateRequestDto) {
+  public User mapToUser(UserUpdateRequest userUpdateRequest) {
     User user = new User();
-    user.setUsername(userUpdateRequestDto.getUsername());
+    user.setUsername(userUpdateRequest.getUsername());
 
-    if (userUpdateRequestDto.getCompany() != null) {
-      Company company = Company.builder().name(userUpdateRequestDto.getCompany()).build();
+    if (userUpdateRequest.getCompany() != null) {
+      Company company = Company.builder().name(userUpdateRequest.getCompany()).build();
 
       user.setCompany(company);
-      user.setProfession(userUpdateRequestDto.getProfession());
-    } else if (userUpdateRequestDto.getUniversity() != null) {
-      University university = University.builder().name(userUpdateRequestDto.getUniversity()).build();
+      user.setProfession(userUpdateRequest.getProfession());
+    } else if (userUpdateRequest.getUniversity() != null) {
+      University university = University.builder().name(userUpdateRequest.getUniversity()).build();
 
       user.setUniversity(university);
     }

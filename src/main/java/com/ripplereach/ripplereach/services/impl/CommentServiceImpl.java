@@ -11,10 +11,10 @@ import com.ripplereach.ripplereach.services.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional
@@ -107,9 +107,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Comment> getCommentsByPostId(Long postId) {
+    public Page<Comment> getCommentsByPostId(Long postId, Pageable pageable) {
         try {
-            return commentRepository.findByPostId(postId);
+            return commentRepository.findByPostId(postId, pageable);
         } catch (RuntimeException ex) {
             log.error("Error while retrieving comments for postId: {}", postId);
             throw new RippleReachException("Error while retrieving comments for the post!");
@@ -118,9 +118,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Comment> getCommentsByUserId(Long userId) {
+    public Page<Comment> getCommentsByUserId(Long userId, Pageable pageable) {
         try {
-            return commentRepository.findByAuthorId(userId);
+            return commentRepository.findByAuthorId(userId, pageable);
         } catch (RuntimeException ex) {
             log.error("Error while retrieving comments for userId: {}", userId);
             throw new RippleReachException("Error while retrieving comments for the user!");

@@ -1,7 +1,7 @@
 package com.ripplereach.ripplereach.controllers;
 
-import com.ripplereach.ripplereach.dtos.CommentRequestDto;
-import com.ripplereach.ripplereach.dtos.CommentResponseDto;
+import com.ripplereach.ripplereach.dtos.CommentRequest;
+import com.ripplereach.ripplereach.dtos.CommentResponse;
 import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.Comment;
 import com.ripplereach.ripplereach.services.CommentService;
@@ -13,13 +13,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Tag(name = "Comment", description = "The Comment API. Contains all the operations that can be performed on comments.")
 public class CommentController {
     private final CommentService commentService;
-    private final Mapper<Comment, CommentResponseDto> commentResponseMapper;
+    private final Mapper<Comment, CommentResponse> commentResponseMapper;
 
     @PostMapping
     @SecurityRequirement(name = "Bearer Authentication")
@@ -35,18 +35,18 @@ public class CommentController {
             summary = "Create Comment",
             description = "Creates a new comment.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = CommentRequestDto.class)))
+                    schema = @Schema(implementation = CommentRequest.class)))
     )
-    public ResponseEntity<CommentResponseDto>
-    createComment(@Valid @RequestBody CommentRequestDto commentRequestDto) {
+    public ResponseEntity<CommentResponse>
+    createComment(@Valid @RequestBody CommentRequest commentRequest) {
         Comment comment = commentService.createComment(
-                commentRequestDto.getPostId(),
-                commentRequestDto.getUserId(),
-                commentRequestDto.getContent()
+                commentRequest.getPostId(),
+                commentRequest.getUserId(),
+                commentRequest.getContent()
         );
 
-        CommentResponseDto commentResponseDto = commentResponseMapper.mapTo(comment);
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentResponseDto);
+        CommentResponse commentResponse = commentResponseMapper.mapTo(comment);
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentResponse);
     }
 
     @PutMapping("/{commentId}")
@@ -57,13 +57,13 @@ public class CommentController {
             parameters = @Parameter(name = "commentId", description = "ID of the comment to update", required = true),
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
     )
-    public ResponseEntity<CommentResponseDto> updateComment(
+    public ResponseEntity<CommentResponse> updateComment(
             @PathVariable Long commentId,
             @RequestBody String content) {
         Comment comment = commentService.updateComment(commentId, content);
 
-        CommentResponseDto commentResponseDto = commentResponseMapper.mapTo(comment);
-        return ResponseEntity.status(HttpStatus.OK).body(commentResponseDto);
+        CommentResponse commentResponse = commentResponseMapper.mapTo(comment);
+        return ResponseEntity.status(HttpStatus.OK).body(commentResponse);
     }
 
     @DeleteMapping("/{commentId}")
@@ -86,12 +86,15 @@ public class CommentController {
             description = "Retrieves all comments for a specific post by its ID.",
             parameters = @Parameter(name = "postId", description = "ID of the post to get comments for", required = true)
     )
-    public ResponseEntity<List<CommentResponseDto>> getCommentsByPostId(@PathVariable Long postId) {
-        List<Comment> comments = commentService.getCommentsByPostId(postId);
+    public ResponseEntity<Page<CommentResponse>> getCommentsByPostId(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(defaultValue = "0") Integer offset) {
+        Pageable pageable = createPageRequestUsing(offset, limit);
+        Page<Comment> comments = commentService.getCommentsByPostId(postId, pageable);
 
-        List<CommentResponseDto> response = comments.stream()
-                .map(commentResponseMapper::mapTo)
-                .collect(Collectors.toList());
+        Page<CommentResponse> response = comments
+                .map(commentResponseMapper::mapTo);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -103,13 +106,20 @@ public class CommentController {
             description = "Retrieves all comments by a specific user by their ID.",
             parameters = @Parameter(name = "userId", description = "ID of the user to get comments for", required = true)
     )
-    public ResponseEntity<List<CommentResponseDto>> getCommentsByUserId(@PathVariable Long userId) {
-        List<Comment> comments = commentService.getCommentsByUserId(userId);
+    public ResponseEntity<Page<CommentResponse>> getCommentsByUserId(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(defaultValue = "0") Integer offset) {
+        Pageable pageable = createPageRequestUsing(offset, limit);
+        Page<Comment> comments = commentService.getCommentsByUserId(userId, pageable);
 
-        List<CommentResponseDto> response = comments.stream()
-                .map(commentResponseMapper::mapTo)
-                .collect(Collectors.toList());
+        Page<CommentResponse> response = comments
+                .map(commentResponseMapper::mapTo);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    private Pageable createPageRequestUsing(int page, int size) {
+        return PageRequest.of(page, size);
     }
 }

@@ -1,7 +1,7 @@
 package com.ripplereach.ripplereach.services.impl;
 
-import com.ripplereach.ripplereach.dtos.CommunityUpdateRequestDto;
-import com.ripplereach.ripplereach.dtos.CommunityRequestDto;
+import com.ripplereach.ripplereach.dtos.CommunityRequest;
+import com.ripplereach.ripplereach.dtos.CommunityUpdateRequest;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
 import com.ripplereach.ripplereach.models.Category;
 import com.ripplereach.ripplereach.models.Community;
@@ -14,12 +14,13 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,15 +35,15 @@ public class CommunityServiceImpl implements CommunityService {
 
     @Override
     @Transactional
-    public Community create(CommunityRequestDto communityRequestDto) {
-        validateCommunityRequest(communityRequestDto);
+    public Community create(CommunityRequest communityRequest) {
+        validateCommunityRequest(communityRequest);
 
-        if (communityRequestDto.getCategoryId() == null) {
+        if (communityRequest.getCategoryId() == null) {
             log.error("Missing field categoryId.");
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Missing field categoryId.");
         }
 
-        String communityName = communityRequestDto.getName();
+        String communityName = communityRequest.getName();
         boolean communityExists = communityRepository.existsByName(communityName);
 
         if (communityExists) {
@@ -50,18 +51,18 @@ public class CommunityServiceImpl implements CommunityService {
             throw new EntityExistsException("Community already exists with name: " + communityName);
         }
 
-        Category category = findCategoryById(communityRequestDto.getCategoryId());
+        Category category = findCategoryById(communityRequest.getCategoryId());
 
-        Community community = buildCommunity(communityRequestDto, category, new Community());
+        Community community = buildCommunity(communityRequest, category, new Community());
 
         return saveCommunity(community);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Community> getAll() {
+    public Page<Community> findAll(Pageable pageable) {
         try {
-            return communityRepository.findAll();
+            return communityRepository.findAll(pageable);
         } catch (RuntimeException ex) {
             log.error("Error while fetching all communities", ex);
             throw new RippleReachException("Error while fetching all communities", ex);
@@ -83,26 +84,26 @@ public class CommunityServiceImpl implements CommunityService {
 
     @Override
     @Transactional
-    public Community update(Long communityId, CommunityRequestDto communityRequestDto) {
-        validateCommunityRequest(communityRequestDto);
+    public Community update(Long communityId, CommunityRequest communityRequest) {
+        validateCommunityRequest(communityRequest);
 
         Community existingCommunity = findCommunityById(communityId)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find community with communityId: " + communityId));
 
-        Category category = findCategoryById(communityRequestDto.getCategoryId());
+        Category category = findCategoryById(communityRequest.getCategoryId());
 
-        Community updatedCommunity = buildCommunity(communityRequestDto, category, existingCommunity);
+        Community updatedCommunity = buildCommunity(communityRequest, category, existingCommunity);
 
         return saveCommunity(updatedCommunity);
     }
 
     @Override
     @Transactional
-    public Community partialUpdate(Long communityId, CommunityUpdateRequestDto communityUpdateRequestDto) {
+    public Community partialUpdate(Long communityId, CommunityUpdateRequest communityUpdateRequest) {
         Community existingCommunity = findCommunityById(communityId)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find community with communityId: " + communityId));
 
-        updateCommunityFields(existingCommunity, communityUpdateRequestDto);
+        updateCommunityFields(existingCommunity, communityUpdateRequest);
 
         return saveCommunity(existingCommunity);
     }
@@ -137,22 +138,22 @@ public class CommunityServiceImpl implements CommunityService {
                 });
     }
 
-    private void validateCommunityRequest(CommunityRequestDto communityRequestDto) {
-        if (communityRequestDto.getName() == null || communityRequestDto.getName().isEmpty()) {
+    private void validateCommunityRequest(CommunityRequest communityRequest) {
+        if (communityRequest.getName() == null || communityRequest.getName().isEmpty()) {
             log.error("Community name is missing");
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Community name is required");
         }
-        if (communityRequestDto.getDesc() == null || communityRequestDto.getDesc().isEmpty()) {
+        if (communityRequest.getDesc() == null || communityRequest.getDesc().isEmpty()) {
             log.error("Community description is missing");
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Community description is required");
         }
-        if (communityRequestDto.getImage() != null && communityRequestDto.getImage().getSize() > IMAGE_SIZE) {
+        if (communityRequest.getImage() != null && communityRequest.getImage().getSize() > IMAGE_SIZE) {
             log.error("Community image size exceeds the limit: " + IMAGE_SIZE);
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Community image size exceeds the limit: " + IMAGE_SIZE);
         }
     }
 
-    private Community buildCommunity(CommunityRequestDto dto, Category category, Community community) {
+    private Community buildCommunity(CommunityRequest dto, Category category, Community community) {
         community.setName(dto.getName());
         community.setSlug(SlugUtil.createWithUnderscore(dto.getName()));
         community.setDescription(dto.getDesc());
@@ -177,7 +178,7 @@ public class CommunityServiceImpl implements CommunityService {
         }
     }
 
-    private void updateCommunityFields(Community community, CommunityUpdateRequestDto dto) {
+    private void updateCommunityFields(Community community, CommunityUpdateRequest dto) {
         if (dto.getName() != null && !dto.getName().isEmpty()) {
             community.setName(dto.getName());
         }

@@ -1,6 +1,6 @@
 package com.ripplereach.ripplereach.mappers.impl;
 
-import com.ripplereach.ripplereach.dtos.UserResponseDto;
+import com.ripplereach.ripplereach.dtos.UserResponse;
 import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.User;
 import lombok.RequiredArgsConstructor;
@@ -9,16 +9,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class UserResponseMapperImpl implements Mapper<User, UserResponseDto> {
+public class UserResponseMapperImpl implements Mapper<User, UserResponse> {
     private final ModelMapper modelMapper;
 
     @Override
-    public User mapFrom(UserResponseDto userResponseDto) {
-        return modelMapper.map(userResponseDto, User.class);
+    public User mapFrom(UserResponse userResponse) {
+        return modelMapper.map(userResponse, User.class);
     }
 
     @Override
-    public UserResponseDto mapTo(User user) {
-        return modelMapper.map(user, UserResponseDto.class);
+    public UserResponse mapTo(User user) {
+        return modelMapper.map(user, UserResponse.class);
     }
 }
