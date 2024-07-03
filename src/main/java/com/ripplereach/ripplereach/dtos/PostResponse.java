@@ -4,17 +4,15 @@ import com.ripplereach.ripplereach.models.Community;
 import com.ripplereach.ripplereach.models.PostAttachment;
 import com.ripplereach.ripplereach.models.User;
 import lombok.*;
-import org.springframework.hateoas.RepresentationModel;
 
 import java.time.Instant;
 import java.util.List;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostResponse extends RepresentationModel<PostResponse> {
+public class PostResponse {
     private Long id;
     private String title;
     private String content;
