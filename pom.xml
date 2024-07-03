@@ -256,9 +256,6 @@
 					<to>
 						<image>registry.hub.docker.com/aaaravv/${project.artifactId}:${project.version}</image>
 					</to>
-					<container>
-						<mainClass>com.ripplereach.ripplereach.RippleReachApplication</mainClass>
-					</container>
 				</configuration>
 				<executions>
 					<execution>
