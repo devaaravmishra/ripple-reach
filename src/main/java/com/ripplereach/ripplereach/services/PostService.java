@@ -12,5 +12,7 @@ public interface PostService {
     Post findById(Long postId);
     Post update(Long postId, PostRequest postRequest);
     void delete(Long postId);
+    void incrementUpvotes(Long postId);
+    void decrementUpvotes(Long postId);
     void updatePostTotalComments(Post post);
 }

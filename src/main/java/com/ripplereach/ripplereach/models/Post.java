@@ -1,6 +1,7 @@
 package com.ripplereach.ripplereach.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -28,6 +30,7 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "community_id", referencedColumnName = "id")
+    @JsonIgnore
     private Community community;
 
     private String link;
@@ -66,6 +69,5 @@ public class Post {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
-        totalUpvotes = (long) upvotes.size();
     }
 }

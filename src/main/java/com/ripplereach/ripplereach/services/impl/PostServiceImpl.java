@@ -2,14 +2,12 @@ package com.ripplereach.ripplereach.services.impl;
 
 import com.ripplereach.ripplereach.dtos.PostRequest;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
+import com.ripplereach.ripplereach.models.Community;
 import com.ripplereach.ripplereach.models.Post;
 import com.ripplereach.ripplereach.models.PostAttachment;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.repositories.PostRepository;
-import com.ripplereach.ripplereach.services.AuthService;
-import com.ripplereach.ripplereach.services.ImageService;
-import com.ripplereach.ripplereach.services.PostService;
-import com.ripplereach.ripplereach.services.UserService;
+import com.ripplereach.ripplereach.services.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +30,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserService userService;
     private final AuthService authService;
+    private final CommunityService communityService;
     private final ImageService imageService;
 
     @Override
@@ -48,6 +47,8 @@ public class PostServiceImpl implements PostService {
                 throw new AccessDeniedException("Unable to create a post, access forbidden");
             }
 
+            Community community = communityService.findById(postRequest.getCommunityId());
+
             List<PostAttachment> attachments = new ArrayList<>();
             if (postRequest.getAttachments() != null) {
                 for (MultipartFile file : postRequest.getAttachments()) {
@@ -61,12 +62,16 @@ public class PostServiceImpl implements PostService {
                 }
             }
 
+
             Post post = Post.builder()
                     .title(postRequest.getTitle())
                     .content(postRequest.getContent())
                     .author(author)
                     .attachments(attachments)
                     .link(postRequest.getLink())
+                    .totalComments(0L)
+                    .totalUpvotes(0L)
+                    .community(community)
                     .build();
 
             Post savedPost = postRepository.save(post);
@@ -93,7 +98,7 @@ public class PostServiceImpl implements PostService {
         try {
             return postRepository.findAll(pageable);
         } catch (RuntimeException ex) {
-            log.error("Error while retrieving all posts");
+            log.error("Error while retrieving all posts", ex);
             throw new RippleReachException("Error while retrieving all posts!");
         }
     }
@@ -167,5 +172,21 @@ public class PostServiceImpl implements PostService {
             log.error("Error while updating comment count for post with id: {}", post.getId());
             throw new RippleReachException("Error while updating comment count for post!");
         }
+    }
+
+    @Transactional
+    @Override
+    public void incrementUpvotes(Long postId) {
+        Post post = findById(postId);
+        post.setTotalUpvotes(post.getTotalUpvotes() + 1);
+        postRepository.save(post);
+    }
+
+    @Transactional
+    @Override
+    public void decrementUpvotes(Long postId) {
+        Post post = findById(postId);
+        post.setTotalUpvotes(post.getTotalUpvotes() - 1);
+        postRepository.save(post);
     }
 }

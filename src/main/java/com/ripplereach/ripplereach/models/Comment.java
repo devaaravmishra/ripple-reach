@@ -52,6 +52,5 @@ public class Comment {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
-        totalUpvotes = (long) upvotes.size();
     }
 }

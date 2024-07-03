@@ -106,6 +106,22 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public Comment getCommentById(Long commentId) {
+        try {
+            return commentRepository.findById(commentId)
+                    .orElseThrow(() ->
+                            new EntityNotFoundException("Comment not found with id: " + commentId));
+
+        } catch (EntityNotFoundException ex) {
+            log.error("Comment not found with id: {}", commentId);
+            throw ex;
+        } catch (RuntimeException ex) {
+            log.error("Error while retrieving comment with id: {}", commentId);
+            throw new RippleReachException("Error while retrieving comment with id: " + commentId);
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Page<Comment> getCommentsByPostId(Long postId, Pageable pageable) {
         try {
@@ -125,5 +141,19 @@ public class CommentServiceImpl implements CommentService {
             log.error("Error while retrieving comments for userId: {}", userId);
             throw new RippleReachException("Error while retrieving comments for the user!");
         }
+    }
+
+    @Transactional
+    public void incrementUpvotes(Long commentId) {
+        Comment comment = getCommentById(commentId);
+        comment.setTotalUpvotes(comment.getTotalUpvotes() + 1);
+        commentRepository.save(comment);
+    }
+
+    @Transactional
+    public void decrementUpvotes(Long commentId) {
+        Comment comment = getCommentById(commentId);
+        comment.setTotalUpvotes(comment.getTotalUpvotes() - 1);
+        commentRepository.save(comment);
     }
 }

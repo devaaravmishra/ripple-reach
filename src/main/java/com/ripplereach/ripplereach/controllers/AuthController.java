@@ -56,7 +56,7 @@ public class AuthController {
   )
   public ResponseEntity<LoginResponse> login(
       @Valid @RequestBody LoginRequest loginRequest) {
-//    authService.verifyIdToken(loginRequestDto.getIdToken());
+    authService.verifyIdToken(loginRequest.getIdToken());
     LoginResponse loginResponse = authService.login(loginRequest);
 
     return new ResponseEntity<>(loginResponse, HttpStatus.OK);

@@ -6,6 +6,8 @@ import com.ripplereach.ripplereach.models.Comment;
 import com.ripplereach.ripplereach.models.Post;
 import com.ripplereach.ripplereach.models.Upvote;
 import com.ripplereach.ripplereach.models.User;
+import com.ripplereach.ripplereach.services.CommentService;
+import com.ripplereach.ripplereach.services.PostService;
 import com.ripplereach.ripplereach.services.UpvoteRepository;
 import com.ripplereach.ripplereach.services.UpvoteService;
 import jakarta.persistence.EntityExistsException;
@@ -21,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class UpvoteServiceImpl implements UpvoteService {
     private final UpvoteRepository upvoteRepository;
+    private final PostService postService;
+    private final CommentService commentService;
 
     @Override
     @Transactional
@@ -47,16 +51,22 @@ public class UpvoteServiceImpl implements UpvoteService {
     }
 
     private void handleUpvote(Long targetId, Long userId, String targetType, UpvoteType upvoteType) {
-        if (upvoteExists(targetId, userId, upvoteType)) {
-            log.error("User {} already upvoted {}", userId, targetType);
-            throw new EntityExistsException("You have already upvoted this " + targetType + ".");
-        }
-
         try {
+            if (upvoteType.equals(UpvoteType.POST)) {
+                postService.incrementUpvotes(targetId);
+            } else if (upvoteType.equals(UpvoteType.COMMENT)) {
+                commentService.incrementUpvotes(targetId);
+            }
+
+            if (upvoteExists(targetId, userId, upvoteType)) {
+                log.error("User {} already upvoted {}", userId, targetType);
+                throw new EntityExistsException("You have already upvoted this " + targetType + ".");
+            }
+
             Upvote upvote = createUpvote(targetId, userId, upvoteType);
             upvoteRepository.save(upvote);
             log.info("User {} upvoted {}", userId, targetType);
-        } catch (EntityExistsException ex) {
+        } catch (EntityExistsException | EntityNotFoundException ex) {
             throw ex;
         } catch (RuntimeException ex) {
             log.error("Error while upvoting {} with id: {} by user id: {}", targetType, targetId, userId, ex);
@@ -66,6 +76,17 @@ public class UpvoteServiceImpl implements UpvoteService {
 
     private void handleRemoveUpvote(Long targetId, Long userId, String targetType, UpvoteType upvoteType) {
         try {
+            if (upvoteType.equals(UpvoteType.POST)) {
+                postService.decrementUpvotes(targetId);
+            } else if (upvoteType.equals(UpvoteType.COMMENT)) {
+                commentService.decrementUpvotes(targetId);
+            }
+
+            if (!upvoteExists(targetId, userId, upvoteType)) {
+                log.error("User {} has not upvoted {}", userId, upvoteType);
+                throw new EntityNotFoundException("You have not upvoted this " + upvoteType + ".");
+            }
+
             deleteUpvote(targetId, userId, upvoteType);
             log.info("User {} removed upvote from {}", userId, targetType);
         } catch (EntityNotFoundException ex) {

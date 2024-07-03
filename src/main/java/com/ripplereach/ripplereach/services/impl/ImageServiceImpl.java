@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 public class ImageServiceImpl implements ImageService {
 
     private final String imageDirectory = "src/main/resources/static/images/";
-    private final String DIR_PREFIX = "images/";
+    private final String DIR_PREFIX = "/images/";
 
     public ImageServiceImpl() {
         createDirectoryIfNotExists();

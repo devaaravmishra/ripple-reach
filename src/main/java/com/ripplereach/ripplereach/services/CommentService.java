@@ -8,6 +8,9 @@ public interface CommentService {
     Comment createComment(Long postId, Long userId, String content);
     Comment updateComment(Long commentId, String content);
     void deleteComment(Long commentId);
+    void incrementUpvotes(Long commentId);
+    void decrementUpvotes(Long commentId);
+    Comment getCommentById(Long commentId);
     Page<Comment> getCommentsByPostId(Long postId, Pageable pageable);
     Page<Comment> getCommentsByUserId(Long userId, Pageable pageable);
 }
