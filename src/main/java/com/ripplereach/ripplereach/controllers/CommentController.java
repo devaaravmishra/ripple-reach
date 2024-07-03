@@ -5,6 +5,7 @@ import com.ripplereach.ripplereach.dtos.CommentResponse;
 import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.Comment;
 import com.ripplereach.ripplereach.services.CommentService;
+import com.ripplereach.ripplereach.utilities.SortValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,10 +17,14 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -28,6 +33,9 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
     private final CommentService commentService;
     private final Mapper<Comment, CommentResponse> commentResponseMapper;
+    public static final List<String> ALLOWED_SORT_PROPERTIES = Arrays.asList(
+            "createdAt", "totalUpvotes"
+    );
 
     @PostMapping
     @SecurityRequirement(name = "Bearer Authentication")
@@ -89,10 +97,12 @@ public class CommentController {
     public ResponseEntity<Page<CommentResponse>> getCommentsByPostId(
             @PathVariable Long postId,
             @RequestParam(defaultValue = "10") Integer limit,
-            @RequestParam(defaultValue = "0") Integer offset) {
-        Pageable pageable = createPageRequestUsing(offset, limit);
-        Page<Comment> comments = commentService.getCommentsByPostId(postId, pageable);
+            @RequestParam(defaultValue = "0") Integer offset,
+            @RequestParam(defaultValue = "createdAt,desc") String sort_by) {
+        List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
+        Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
+        Page<Comment> comments = commentService.getCommentsByPostId(postId, pageable);
         Page<CommentResponse> response = comments
                 .map(commentResponseMapper::mapTo);
 
@@ -109,17 +119,19 @@ public class CommentController {
     public ResponseEntity<Page<CommentResponse>> getCommentsByUserId(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "10") Integer limit,
-            @RequestParam(defaultValue = "0") Integer offset) {
-        Pageable pageable = createPageRequestUsing(offset, limit);
-        Page<Comment> comments = commentService.getCommentsByUserId(userId, pageable);
+            @RequestParam(defaultValue = "0") Integer offset,
+            @RequestParam(defaultValue = "createdAt,desc") String sort_by) {
+        List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
+        Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
+        Page<Comment> comments = commentService.getCommentsByUserId(userId, pageable);
         Page<CommentResponse> response = comments
                 .map(commentResponseMapper::mapTo);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    private Pageable createPageRequestUsing(int page, int size) {
-        return PageRequest.of(page, size);
+    private Pageable createPageRequestUsing(int page, int size, Sort sort) {
+        return PageRequest.of(page, size, sort);
     }
 }
