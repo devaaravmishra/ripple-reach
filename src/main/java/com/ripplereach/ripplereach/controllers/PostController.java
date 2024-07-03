@@ -60,7 +60,6 @@ public class PostController {
                                                           @RequestParam(defaultValue = "0") Integer offset,
                                                           @RequestParam(defaultValue = "createdAt,desc") String sort_by) {
 
-        System.out.println("sort_By: " + sort_by);
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
@@ -93,12 +92,10 @@ public class PostController {
     public ResponseEntity<Page<PostResponse>> getPostsByCommunity(@PathVariable Long communityId,
                                                                   @RequestParam(defaultValue= "10") Integer limit,
                                                                   @RequestParam(defaultValue = "0") Integer offset,
-                                                                  @RequestParam(defaultValue = "createdAt,desc") String[] sort_by) {
-        List<Sort.Order> sortingOrder = Sort.by(sort_by).stream()
-                .map(order -> new Sort.Order(order.isAscending() ? Sort.Direction.ASC : Sort.Direction.DESC, order.getProperty()))
-                .toList();
+                                                                  @RequestParam(defaultValue = "createdAt,desc") String sort_by) {
+        List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
+        Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
-        Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(sortingOrder));
         Page<Post> posts = postService.findAllByCommunity(communityId, pageable);
         Page<PostResponse> postResponses = posts.map(postResponseMapper::mapTo);
 
