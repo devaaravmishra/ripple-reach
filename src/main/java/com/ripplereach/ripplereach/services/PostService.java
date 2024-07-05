@@ -7,8 +7,9 @@ import org.springframework.data.domain.Pageable;
 
 public interface PostService {
     Post create(PostRequest postRequest);
-    Page<Post> findAll(Pageable pageable);
-    Page<Post> findAllByCommunity(Long communityId, Pageable pageable);
+    Page<Post> findAll(String search, Pageable pageable);
+    Page<Post> findAllByCommunity(Long communityId, String search, Pageable pageable);
+    Page<Post> findAllByAuthor(Long authorId, String search, Pageable pageable);
     Post findById(Long postId);
     Post update(Long postId, PostRequest postRequest);
     void delete(Long postId);

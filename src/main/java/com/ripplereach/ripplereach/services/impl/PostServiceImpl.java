@@ -8,11 +8,13 @@ import com.ripplereach.ripplereach.models.PostAttachment;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.repositories.PostRepository;
 import com.ripplereach.ripplereach.services.*;
+import com.ripplereach.ripplereach.specifications.PostSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -94,9 +96,14 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Post> findAll(Pageable pageable) {
+    public Page<Post> findAll(String search, Pageable pageable) {
         try {
-            return postRepository.findAll(pageable);
+            Specification<Post> spec = Specification.where(null);
+            if (search != null && !search.isEmpty()) {
+                spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
+            }
+
+            return postRepository.findAll(spec, pageable);
         } catch (RuntimeException ex) {
             log.error("Error while retrieving all posts", ex);
             throw new RippleReachException("Error while retrieving all posts!");
@@ -104,9 +111,35 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<Post> findAllByCommunity(Long communityId, Pageable pageable) {
+    public Page<Post> findAllByCommunity(Long communityId, String search, Pageable pageable) {
         try {
-            return postRepository.findAllByCommunityId(communityId, pageable);
+            Specification<Post> spec = Specification.where((root, query, cb) ->
+                    cb.equal(root.get("community").get("id"), communityId)
+            );
+
+            if (search != null && !search.isEmpty()) {
+                spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
+            }
+
+            return postRepository.findAll(spec, pageable);
+        } catch (RuntimeException ex) {
+            log.error("Error while retrieving all posts");
+            throw new RippleReachException("Error while retrieving all posts!");
+        }
+    }
+
+    @Override
+    public Page<Post> findAllByAuthor(Long authorId, String search, Pageable pageable) {
+        try {
+            Specification<Post> spec = Specification.where((root, query, cb) ->
+                    cb.equal(root.get("author").get("id"), authorId)
+            );
+
+            if (search != null && !search.isEmpty()) {
+                spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
+            }
+
+            return postRepository.findAll(spec, pageable);
         } catch (RuntimeException ex) {
             log.error("Error while retrieving all posts");
             throw new RippleReachException("Error while retrieving all posts!");

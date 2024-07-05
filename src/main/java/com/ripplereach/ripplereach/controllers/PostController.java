@@ -54,16 +54,17 @@ public class PostController {
     @GetMapping
     @Operation(
             summary = "Get All Posts",
-            description = "Retrieves all posts."
+            description = "Get all posts."
     )
     public ResponseEntity<Page<PostResponse>> getAllPosts(@RequestParam(defaultValue = "10") Integer limit,
                                                           @RequestParam(defaultValue = "0") Integer offset,
-                                                          @RequestParam(defaultValue = "createdAt,desc") String sort_by) {
+                                                          @RequestParam(defaultValue = "createdAt,desc") String sort_by,
+                                                          @RequestParam(required = false) String search) {
 
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
-        Page<Post> posts = postService.findAll(pageable);
+        Page<Post> posts = postService.findAll(search, pageable);
         Page<PostResponse> postsResponse = posts.map(postResponseMapper::mapTo);
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -74,7 +75,7 @@ public class PostController {
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(
             summary = "Get Post by ID",
-            description = "Retrieves the post by its ID.",
+            description = "Get the post by its ID.",
             parameters = @Parameter(name = "postId", description = "ID of the post to be retrieved", required = true)
     )
     public ResponseEntity<PostResponse> getPost(@PathVariable Long postId) {
@@ -82,21 +83,44 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(postResponseMapper.mapTo(post));
     }
 
-    @GetMapping("/community/{communityId}")
+    @GetMapping("/communities/{communityId}")
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(
             summary = "Get Posts by community",
-            description = "Retrieves the post by its community ID.",
+            description = "Get the post by its community ID.",
             parameters = @Parameter(name = "postId", description = "ID of the community whose posts needs to be retrieved", required = true)
     )
     public ResponseEntity<Page<PostResponse>> getPostsByCommunity(@PathVariable Long communityId,
                                                                   @RequestParam(defaultValue= "10") Integer limit,
                                                                   @RequestParam(defaultValue = "0") Integer offset,
-                                                                  @RequestParam(defaultValue = "createdAt,desc") String sort_by) {
+                                                                  @RequestParam(defaultValue = "createdAt,desc") String sort_by,
+                                                                  @RequestParam(required = false) String search) {
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
-        Page<Post> posts = postService.findAllByCommunity(communityId, pageable);
+        Page<Post> posts = postService.findAllByCommunity(communityId, search, pageable);
+        Page<PostResponse> postResponses = posts.map(postResponseMapper::mapTo);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(postResponses);
+    }
+
+    @GetMapping("/authors/{authorId}")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(
+            summary = "Get Posts by author",
+            description = "Get all the posts by its author ID.",
+            parameters = @Parameter(name = "authorId", description = "ID of the author whose posts needs to be retrieved", required = true)
+    )
+    public ResponseEntity<Page<PostResponse>> getPostsByAuthor(@PathVariable Long authorId,
+                                                                  @RequestParam(defaultValue= "10") Integer limit,
+                                                                  @RequestParam(defaultValue = "0") Integer offset,
+                                                                  @RequestParam(defaultValue = "createdAt,desc") String sort_by,
+                                                                  @RequestParam(required = false) String search) {
+        List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
+        Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
+
+        Page<Post> posts = postService.findAllByAuthor(authorId, search, pageable);
         Page<PostResponse> postResponses = posts.map(postResponseMapper::mapTo);
 
         return ResponseEntity.status(HttpStatus.OK)

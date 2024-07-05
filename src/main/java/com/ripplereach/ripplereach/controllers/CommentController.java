@@ -87,7 +87,7 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping("/post/{postId}")
+    @GetMapping("/posts/{postId}")
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(
             summary = "Get Comments by Post ID",
@@ -109,7 +109,7 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/users/{userId}")
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(
             summary = "Get Comments by User ID",
