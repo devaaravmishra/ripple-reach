@@ -2,6 +2,7 @@ package com.ripplereach.ripplereach.services.impl;
 
 import com.ripplereach.ripplereach.dtos.*;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
+import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.RefreshToken;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.security.JwtProvider;
@@ -28,6 +29,7 @@ import java.time.Instant;
 public class AuthServiceImpl implements AuthService {
 
   private final UserService userService;
+  private final Mapper<User, UserResponse> userResponseMapper;
   private final RefreshTokenService refreshTokenService;
   private final FirebaseAuthServiceImpl firebaseAuthService;
   private final JwtProvider jwtProvider;
@@ -47,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
 
       return LoginResponse.builder()
           .message("Success")
-          .user(userEntity)
+          .user(userResponseMapper.mapTo(userEntity))
           .auth(authResponse)
           .build();
   }

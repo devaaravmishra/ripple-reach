@@ -2,6 +2,7 @@ package com.ripplereach.ripplereach.controllers;
 
 import com.ripplereach.ripplereach.constants.Messages;
 import com.ripplereach.ripplereach.dtos.*;
+import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.mappers.UserMapper;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.services.AuthService;
@@ -25,6 +26,7 @@ public class AuthController {
 
   private final AuthService authService;
   private final UserMapper userMapper;
+  private final Mapper<User, UserResponse> userResponseMapper;
 
   @PostMapping("/register")
   @Operation(
@@ -42,7 +44,7 @@ public class AuthController {
     RegisterResponse registerResponse =
         RegisterResponse.builder()
             .message(Messages.USER_CREATED_SUCCESSFULLY)
-            .user(userResponseEntity)
+            .user(userResponseMapper.mapTo(userResponseEntity))
             .auth(authResponse)
             .build();
 

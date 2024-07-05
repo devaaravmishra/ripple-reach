@@ -51,10 +51,7 @@ public class CategoryController {
     public ResponseEntity<CategoryResponse> getCategory(@PathVariable Long categoryId) {
         Category category = categoryService.findById(categoryId);
 
-        CategoryResponse categoryResponse = CategoryResponse
-                .builder()
-                .category(category)
-                .build();
+        CategoryResponse categoryResponse = categoryResponseMapper.mapTo(category);
 
         return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
     }
