@@ -12,6 +12,7 @@ import com.ripplereach.ripplereach.specifications.PostSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -99,8 +100,10 @@ public class PostServiceImpl implements PostService {
     public Page<Post> findAll(String search, Pageable pageable) {
         try {
             Specification<Post> spec = Specification.where(null);
-            if (search != null && !search.isEmpty()) {
-                spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
+
+            search = search.trim();
+            if (StringUtils.isEmpty(search)) {
+                spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search.trim()));
             }
 
             return postRepository.findAll(spec, pageable);
@@ -117,7 +120,8 @@ public class PostServiceImpl implements PostService {
                     cb.equal(root.get("community").get("id"), communityId)
             );
 
-            if (search != null && !search.isEmpty()) {
+            search = search.trim();
+            if (StringUtils.isEmpty(search)) {
                 spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
             }
 
@@ -135,7 +139,8 @@ public class PostServiceImpl implements PostService {
                     cb.equal(root.get("author").get("id"), authorId)
             );
 
-            if (search != null && !search.isEmpty()) {
+            search = search.trim();
+            if (StringUtils.isEmpty(search)) {
                 spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
             }
 
