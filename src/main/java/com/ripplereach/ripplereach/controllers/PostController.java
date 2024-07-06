@@ -59,7 +59,7 @@ public class PostController {
     public ResponseEntity<Page<PostResponse>> getAllPosts(@RequestParam(defaultValue = "10") Integer limit,
                                                           @RequestParam(defaultValue = "0") Integer offset,
                                                           @RequestParam(defaultValue = "createdAt,desc") String sort_by,
-                                                          @RequestParam(required = false) String search) {
+                                                          @RequestParam(required = false, defaultValue = "") String search) {
 
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
@@ -94,7 +94,7 @@ public class PostController {
                                                                   @RequestParam(defaultValue= "10") Integer limit,
                                                                   @RequestParam(defaultValue = "0") Integer offset,
                                                                   @RequestParam(defaultValue = "createdAt,desc") String sort_by,
-                                                                  @RequestParam(required = false) String search) {
+                                                                  @RequestParam(required = false, defaultValue = "") String search) {
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
@@ -116,7 +116,7 @@ public class PostController {
                                                                   @RequestParam(defaultValue= "10") Integer limit,
                                                                   @RequestParam(defaultValue = "0") Integer offset,
                                                                   @RequestParam(defaultValue = "createdAt,desc") String sort_by,
-                                                                  @RequestParam(required = false) String search) {
+                                                                  @RequestParam(required = false, defaultValue = "") String search) {
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 

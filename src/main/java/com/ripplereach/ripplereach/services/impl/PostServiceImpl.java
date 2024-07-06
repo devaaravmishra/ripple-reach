@@ -12,7 +12,6 @@ import com.ripplereach.ripplereach.specifications.PostSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -100,10 +99,10 @@ public class PostServiceImpl implements PostService {
     public Page<Post> findAll(String search, Pageable pageable) {
         try {
             Specification<Post> spec = Specification.where(null);
-
-            search = search.trim();
-            if (StringUtils.isEmpty(search)) {
-                spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search.trim()));
+            
+            search = removeAllWhitespace(search);
+            if (!search.isEmpty()) {
+                spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
             }
 
             return postRepository.findAll(spec, pageable);
@@ -112,7 +111,7 @@ public class PostServiceImpl implements PostService {
             throw new RippleReachException("Error while retrieving all posts!");
         }
     }
-
+    
     @Override
     public Page<Post> findAllByCommunity(Long communityId, String search, Pageable pageable) {
         try {
@@ -120,8 +119,8 @@ public class PostServiceImpl implements PostService {
                     cb.equal(root.get("community").get("id"), communityId)
             );
 
-            search = search.trim();
-            if (StringUtils.isEmpty(search)) {
+            search = removeAllWhitespace(search);
+            if (!search.isEmpty()) {
                 spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
             }
 
@@ -139,8 +138,8 @@ public class PostServiceImpl implements PostService {
                     cb.equal(root.get("author").get("id"), authorId)
             );
 
-            search = search.trim();
-            if (StringUtils.isEmpty(search)) {
+            search = removeAllWhitespace(search);
+            if (!search.isEmpty()) {
                 spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
             }
 
@@ -226,5 +225,9 @@ public class PostServiceImpl implements PostService {
         Post post = findById(postId);
         post.setTotalUpvotes(post.getTotalUpvotes() - 1);
         postRepository.save(post);
+    }
+
+    private static String removeAllWhitespace(String search) {
+        return search.replaceAll("[\\p{Z}\\s\"']", "");
     }
 }
