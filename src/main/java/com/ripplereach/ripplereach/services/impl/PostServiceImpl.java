@@ -1,7 +1,11 @@
 package com.ripplereach.ripplereach.services.impl;
 
+import com.ripplereach.ripplereach.dtos.CommunityPostsResponse;
+import com.ripplereach.ripplereach.dtos.CommunityResponse;
 import com.ripplereach.ripplereach.dtos.PostRequest;
+import com.ripplereach.ripplereach.dtos.PostResponseByCommunity;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
+import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.Community;
 import com.ripplereach.ripplereach.models.Post;
 import com.ripplereach.ripplereach.models.PostAttachment;
@@ -34,6 +38,8 @@ public class PostServiceImpl implements PostService {
     private final AuthService authService;
     private final CommunityService communityService;
     private final ImageService imageService;
+    private final Mapper<Post, PostResponseByCommunity> postResponseMapper;
+    private final Mapper<Community, CommunityResponse> communityResponseMapper;
 
     @Override
     @Transactional
@@ -113,7 +119,7 @@ public class PostServiceImpl implements PostService {
     }
     
     @Override
-    public Page<Post> findAllByCommunity(Long communityId, String search, Pageable pageable) {
+    public CommunityPostsResponse findAllByCommunity(Long communityId, String search, Pageable pageable) {
         try {
             Specification<Post> spec = Specification.where((root, query, cb) ->
                     cb.equal(root.get("community").get("id"), communityId)
@@ -124,7 +130,17 @@ public class PostServiceImpl implements PostService {
                 spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
             }
 
-            return postRepository.findAll(spec, pageable);
+            Page<PostResponseByCommunity> posts = postRepository.findAll(spec, pageable)
+                    .map(postResponseMapper::mapTo);
+
+            Community community = communityService.findById(communityId);
+
+            return CommunityPostsResponse
+                    .builder()
+                    .posts(posts)
+                    .community(communityResponseMapper.mapTo(community))
+                    .build();
+
         } catch (RuntimeException ex) {
             log.error("Error while retrieving all posts");
             throw new RippleReachException("Error while retrieving all posts!");

@@ -1,7 +1,9 @@
 package com.ripplereach.ripplereach.controllers;
 
+import com.ripplereach.ripplereach.dtos.CommunityPostsResponse;
 import com.ripplereach.ripplereach.dtos.PostRequest;
 import com.ripplereach.ripplereach.dtos.PostResponse;
+import com.ripplereach.ripplereach.dtos.PostResponseByCommunity;
 import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.Post;
 import com.ripplereach.ripplereach.services.PostService;
@@ -34,6 +36,8 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
     private final Mapper<Post, PostResponse> postResponseMapper;
+    private final Mapper<Post, PostResponseByCommunity> postResponseByCommunityMapper;
+
     public static final List<String> ALLOWED_SORT_PROPERTIES = Arrays.asList(
             "createdAt", "totalUpvotes", "title"
     );
@@ -88,21 +92,20 @@ public class PostController {
     @Operation(
             summary = "Get Posts by community",
             description = "Get the post by its community ID.",
-            parameters = @Parameter(name = "postId", description = "ID of the community whose posts needs to be retrieved", required = true)
+            parameters = @Parameter(name = "communityId", description = "ID of the community whose posts needs to be retrieved", required = true)
     )
-    public ResponseEntity<Page<PostResponse>> getPostsByCommunity(@PathVariable Long communityId,
-                                                                  @RequestParam(defaultValue= "10") Integer limit,
-                                                                  @RequestParam(defaultValue = "0") Integer offset,
-                                                                  @RequestParam(defaultValue = "createdAt,desc") String sort_by,
-                                                                  @RequestParam(required = false, defaultValue = "") String search) {
+    public ResponseEntity<CommunityPostsResponse> getPostsByCommunity(@PathVariable Long communityId,
+                                                                      @RequestParam(defaultValue= "10") Integer limit,
+                                                                      @RequestParam(defaultValue = "0") Integer offset,
+                                                                      @RequestParam(defaultValue = "createdAt,desc") String sort_by,
+                                                                      @RequestParam(required = false, defaultValue = "") String search) {
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
-        Page<Post> posts = postService.findAllByCommunity(communityId, search, pageable);
-        Page<PostResponse> postResponses = posts.map(postResponseMapper::mapTo);
+        CommunityPostsResponse response = postService.findAllByCommunity(communityId, search, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(postResponses);
+                .body(response);
     }
 
     @GetMapping("/authors/{authorId}")
