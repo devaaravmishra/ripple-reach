@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -106,26 +107,25 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @Transactional
   public AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
     try {
-      Authentication authentication = SecurityContextHolder
-              .getContext()
-              .getAuthentication();
-
       refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
-      String token = jwtProvider.generateToken(authentication);
 
-      return AuthResponse.builder()
-          .token(token)
-          .refreshToken(refreshTokenRequest.getRefreshToken())
-          .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-          .username(refreshTokenRequest.getUsername())
-          .build();
+      String username = Optional.ofNullable(refreshTokenRequest.getUsername())
+              .map(String::trim)
+              .orElse("");
+
+      User existingUser = username.isEmpty()
+              ? userService.findByPhone(getAuthenticatedUser().getName())
+              : userService.findByUsername(username);
+
+      return generateAuthenticationToken(existingUser);
     } catch (EntityNotFoundException ex) {
       throw ex;
     } catch (RuntimeException ex) {
-      throw new RippleReachException(ex.getMessage());
+      log.error("Error generating token for refreshToken: {} {}", refreshTokenRequest.getRefreshToken(), ex.getMessage());
+      throw new RippleReachException("Error generating token for refreshToken: " + refreshTokenRequest.getRefreshToken());
     }
   }
 
