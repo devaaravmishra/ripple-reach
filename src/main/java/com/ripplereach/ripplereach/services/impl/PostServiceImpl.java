@@ -1,9 +1,6 @@
 package com.ripplereach.ripplereach.services.impl;
 
-import com.ripplereach.ripplereach.dtos.CommunityPostsResponse;
-import com.ripplereach.ripplereach.dtos.CommunityResponse;
-import com.ripplereach.ripplereach.dtos.PostRequest;
-import com.ripplereach.ripplereach.dtos.PostResponseByCommunity;
+import com.ripplereach.ripplereach.dtos.*;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
 import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.Community;
@@ -34,16 +31,18 @@ import java.util.List;
 @AllArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
+    private final UpvoteRepository upvoteRepository;
     private final UserService userService;
     private final AuthService authService;
     private final CommunityService communityService;
     private final ImageService imageService;
-    private final Mapper<Post, PostResponseByCommunity> postResponseMapper;
+    private final Mapper<Post, PostResponse> postResponseMapper;
+    private final Mapper<Post, PostResponseByCommunity> postCommunityResponseMapper;
     private final Mapper<Community, CommunityResponse> communityResponseMapper;
 
     @Override
     @Transactional
-    public Post create(PostRequest postRequest) {
+    public PostResponse create(PostRequest postRequest) {
         try {
             User author = userService.findById(postRequest.getAuthorId());
 
@@ -72,8 +71,8 @@ public class PostServiceImpl implements PostService {
 
 
             Post post = Post.builder()
-                    .title(postRequest.getTitle())
-                    .content(postRequest.getContent())
+                    .title(postRequest.getTitle().trim())
+                    .content(postRequest.getContent().trim())
                     .author(author)
                     .attachments(attachments)
                     .link(postRequest.getLink())
@@ -87,7 +86,10 @@ public class PostServiceImpl implements PostService {
             log.info("Post with id {} created successfully for user id {}",
                     savedPost.getId(), postRequest.getAuthorId());
 
-            return savedPost;
+            PostResponse postResponse = postResponseMapper.mapTo(savedPost);
+            postResponse.setUpvotedByUser(isUpvotedByLoggedInUser(savedPost.getId()));
+
+            return postResponse;
         } catch (EntityNotFoundException | AccessDeniedException ex) {
             throw ex;
         } catch (RuntimeException ex) {
@@ -102,7 +104,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Post> findAll(String search, Pageable pageable) {
+    public Page<PostResponse> findAll(String search, Pageable pageable) {
         try {
             Specification<Post> spec = Specification.where(null);
             
@@ -111,7 +113,13 @@ public class PostServiceImpl implements PostService {
                 spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
             }
 
-            return postRepository.findAll(spec, pageable);
+            return postRepository.findAll(spec, pageable).map(post -> {
+                PostResponse postResponse = postResponseMapper.mapTo(post);
+                boolean isUpvoted = isUpvotedByLoggedInUser(post.getId());
+                System.out.println("is upvoted: " + isUpvoted);
+                postResponse.setUpvotedByUser(isUpvoted);
+                return postResponse;
+            });
         } catch (RuntimeException ex) {
             log.error("Error while retrieving all posts", ex);
             throw new RippleReachException("Error while retrieving all posts!");
@@ -131,7 +139,11 @@ public class PostServiceImpl implements PostService {
             }
 
             Page<PostResponseByCommunity> posts = postRepository.findAll(spec, pageable)
-                    .map(postResponseMapper::mapTo);
+                    .map(post -> {
+                        PostResponseByCommunity postResponse = postCommunityResponseMapper.mapTo(post);
+                        postResponse.setUpvotedByUser(isUpvotedByLoggedInUser(post.getId()));
+                        return postResponse;
+                    });
 
             Community community = communityService.findById(communityId);
 
@@ -148,7 +160,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<Post> findAllByAuthor(Long authorId, String search, Pageable pageable) {
+    public Page<PostResponse> findAllByAuthor(Long authorId, String search, Pageable pageable) {
         try {
             Specification<Post> spec = Specification.where((root, query, cb) ->
                     cb.equal(root.get("author").get("id"), authorId)
@@ -159,7 +171,12 @@ public class PostServiceImpl implements PostService {
                 spec = spec.and(PostSpecification.containsTextInTitleOrContentOrCommunity(search));
             }
 
-            return postRepository.findAll(spec, pageable);
+            return postRepository.findAll(spec, pageable)
+                    .map(post -> {
+                        PostResponse postResponse = postResponseMapper.mapTo(post);
+                        postResponse.setUpvotedByUser(isUpvotedByLoggedInUser(post.getId()));
+                        return postResponse;
+                    });
         } catch (RuntimeException ex) {
             log.error("Error while retrieving all posts");
             throw new RippleReachException("Error while retrieving all posts!");
@@ -168,24 +185,47 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public Post findById(Long postId) {
+    public PostResponse findById(Long postId) {
         try {
-            return postRepository.findById(postId)
-                    .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+            Post post = getPostById(postId);
+
+            return postResponseMapper.mapTo(post);
         } catch (EntityNotFoundException ex) {
             log.error("Post not found with id: {}", postId);
             throw ex;
         } catch (RuntimeException ex) {
+            throw new RippleReachException(ex.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Post getPostById(Long postId) {
+        try {
+            return postRepository.findById(postId)
+                    .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        } catch (EntityNotFoundException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
             log.error("Error while retrieving post with id: {}", postId);
-            throw new RippleReachException("Error while retrieving post!");
+            throw new RippleReachException("Error while retrieving post with id:" + postId);
         }
     }
 
     @Override
     @Transactional
-    public Post update(Long postId, PostRequest postRequest) {
+    public PostResponse update(Long postId, PostRequest postRequest) {
         try {
-            Post post = findById(postId);
+            Post post = getPostById(postId);
+
+            // check whether the authenticated user is updating the post
+            Jwt principal = (Jwt) authService.getAuthenticatedUser().getPrincipal();
+            if (!principal.getSubject().equals(post.getAuthor().getPhone())) {
+                log.error("Unable to update the post, access forbidden attempted by userId: {}",
+                        postRequest.getAuthorId());
+                throw new AccessDeniedException("Unable to update the post, access forbidden");
+            }
+
             post.setTitle(postRequest.getTitle());
             post.setContent(postRequest.getContent());
 
@@ -193,7 +233,10 @@ public class PostServiceImpl implements PostService {
 
             log.info("Post with id {} updated successfully", postId);
 
-            return updatedPost;
+            PostResponse postResponse = postResponseMapper.mapTo(updatedPost);
+            postResponse.setUpvotedByUser(isUpvotedByLoggedInUser(updatedPost.getId()));
+
+            return postResponse;
         } catch (EntityNotFoundException ex) {
             log.error("Post not found with id: {}", postId);
             throw ex;
@@ -227,20 +270,51 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void incrementUpvotes(Long postId) {
-        Post post = findById(postId);
-        post.setTotalUpvotes(post.getTotalUpvotes() + 1);
-        postRepository.save(post);
+        try {
+            Post post = getPostById(postId);
+            post.setTotalUpvotes(post.getTotalUpvotes() + 1);
+            postRepository.save(post);
+        } catch (EntityNotFoundException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
+            log.error("Unable to upvote the post with id: {}", postId, ex);
+            throw new RippleReachException("Unable to upvote the post with id: " + postId);
+        }
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void decrementUpvotes(Long postId) {
-        Post post = findById(postId);
-        post.setTotalUpvotes(post.getTotalUpvotes() - 1);
-        postRepository.save(post);
+        try {
+            Post post = getPostById(postId);
+            post.setTotalUpvotes(Math.max(post.getTotalUpvotes() - 1, 0));
+            postRepository.save(post);
+        } catch (EntityNotFoundException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
+            log.error("Unable to remove upvote from the post with id: {}", postId, ex);
+            throw new RippleReachException("Unable to remove upvote from the post with id: " + postId);
+        }
+    }
+
+    private boolean isUpvotedByLoggedInUser(Long targetId) {
+        try {
+            if (!authService.isLoggedIn()) {
+                return false;
+            }
+
+            User currentUser = authService.getCurrentUser();
+            System.out.println("current user id: " + currentUser.getId() + " post id: " + targetId);
+
+            return upvoteRepository.existsByUserIdAndPostId(currentUser.getId(), targetId);
+        } catch (EntityNotFoundException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
+            throw new RippleReachException(ex.getMessage());
+        }
     }
 
     private static String removeAllWhitespace(String search) {

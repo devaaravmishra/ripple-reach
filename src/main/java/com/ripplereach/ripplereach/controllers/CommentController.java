@@ -47,14 +47,13 @@ public class CommentController {
     )
     public ResponseEntity<CommentResponse>
     createComment(@Valid @RequestBody CommentRequest commentRequest) {
-        Comment comment = commentService.createComment(
+        CommentResponse comment = commentService.createComment(
                 commentRequest.getPostId(),
                 commentRequest.getUserId(),
                 commentRequest.getContent()
         );
 
-        CommentResponse commentResponse = commentResponseMapper.mapTo(comment);
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(comment);
     }
 
     @PutMapping("/{commentId}")
@@ -68,10 +67,9 @@ public class CommentController {
     public ResponseEntity<CommentResponse> updateComment(
             @PathVariable Long commentId,
             @RequestBody String content) {
-        Comment comment = commentService.updateComment(commentId, content);
+        CommentResponse comment = commentService.updateComment(commentId, content);
 
-        CommentResponse commentResponse = commentResponseMapper.mapTo(comment);
-        return ResponseEntity.status(HttpStatus.OK).body(commentResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(comment);
     }
 
     @DeleteMapping("/{commentId}")
@@ -102,11 +100,9 @@ public class CommentController {
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
-        Page<Comment> comments = commentService.getCommentsByPostId(postId, pageable);
-        Page<CommentResponse> response = comments
-                .map(commentResponseMapper::mapTo);
+        Page<CommentResponse> comments = commentService.getCommentsByPostId(postId, pageable);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(comments);
     }
 
     @GetMapping("/users/{userId}")
@@ -124,11 +120,9 @@ public class CommentController {
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
-        Page<Comment> comments = commentService.getCommentsByUserId(userId, pageable);
-        Page<CommentResponse> response = comments
-                .map(commentResponseMapper::mapTo);
+        Page<CommentResponse> comments = commentService.getCommentsByUserId(userId, pageable);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(comments);
     }
 
     private Pageable createPageRequestUsing(int page, int size, Sort sort) {

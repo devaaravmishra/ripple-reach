@@ -10,6 +10,8 @@ public interface AuthService {
   void logout(LogoutRequest logoutRequest);
   AuthResponse generateAuthenticationToken(User user);
   Authentication getAuthenticatedUser();
+  User getCurrentUser();
   AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
   String verifyIdToken(String idToken);
+  boolean isLoggedIn();
 }

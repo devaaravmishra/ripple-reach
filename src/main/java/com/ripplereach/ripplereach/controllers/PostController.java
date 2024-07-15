@@ -3,9 +3,6 @@ package com.ripplereach.ripplereach.controllers;
 import com.ripplereach.ripplereach.dtos.CommunityPostsResponse;
 import com.ripplereach.ripplereach.dtos.PostRequest;
 import com.ripplereach.ripplereach.dtos.PostResponse;
-import com.ripplereach.ripplereach.dtos.PostResponseByCommunity;
-import com.ripplereach.ripplereach.mappers.Mapper;
-import com.ripplereach.ripplereach.models.Post;
 import com.ripplereach.ripplereach.services.PostService;
 import com.ripplereach.ripplereach.utilities.SortValidator;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,8 +32,6 @@ import java.util.List;
 @Tag(name = "Post", description = "The Post API. Contains all the operations that can be performed on a post.")
 public class PostController {
     private final PostService postService;
-    private final Mapper<Post, PostResponse> postResponseMapper;
-    private final Mapper<Post, PostResponseByCommunity> postResponseByCommunityMapper;
 
     public static final List<String> ALLOWED_SORT_PROPERTIES = Arrays.asList(
             "createdAt", "totalUpvotes", "title"
@@ -51,11 +46,12 @@ public class PostController {
                     schema = @Schema(type = "object", implementation = PostRequest.class)))
     )
     public ResponseEntity<PostResponse> createPost(@Valid @ModelAttribute PostRequest postRequest) {
-        Post post = postService.create(postRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(postResponseMapper.mapTo(post));
+        PostResponse post = postService.create(postRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(post);
     }
 
     @GetMapping
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(
             summary = "Get All Posts",
             description = "Get all posts."
@@ -68,11 +64,10 @@ public class PostController {
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
-        Page<Post> posts = postService.findAll(search, pageable);
-        Page<PostResponse> postsResponse = posts.map(postResponseMapper::mapTo);
+        Page<PostResponse> posts = postService.findAll(search, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(postsResponse);
+                .body(posts);
     }
 
     @GetMapping("/{postId}")
@@ -83,8 +78,8 @@ public class PostController {
             parameters = @Parameter(name = "postId", description = "ID of the post to be retrieved", required = true)
     )
     public ResponseEntity<PostResponse> getPost(@PathVariable Long postId) {
-        Post post = postService.findById(postId);
-        return ResponseEntity.status(HttpStatus.OK).body(postResponseMapper.mapTo(post));
+        PostResponse post = postService.findById(postId);
+        return ResponseEntity.status(HttpStatus.OK).body(post);
     }
 
     @GetMapping("/communities/{communityId}")
@@ -123,11 +118,10 @@ public class PostController {
         List<Sort.Order> orders = SortValidator.validateSort(sort_by, ALLOWED_SORT_PROPERTIES);
         Pageable pageable = createPageRequestUsing(offset, limit, Sort.by(orders));
 
-        Page<Post> posts = postService.findAllByAuthor(authorId, search, pageable);
-        Page<PostResponse> postResponses = posts.map(postResponseMapper::mapTo);
+        Page<PostResponse> posts = postService.findAllByAuthor(authorId, search, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(postResponses);
+                .body(posts);
     }
 
     @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -141,8 +135,8 @@ public class PostController {
     )
     public ResponseEntity<PostResponse>
     updatePost(@PathVariable Long postId, @Valid @ModelAttribute PostRequest postRequest) {
-        Post post = postService.update(postId, postRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(postResponseMapper.mapTo(post));
+        PostResponse post = postService.update(postId, postRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(post);
     }
 
     @DeleteMapping("/{postId}")

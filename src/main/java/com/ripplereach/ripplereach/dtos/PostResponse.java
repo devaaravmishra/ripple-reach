@@ -23,6 +23,7 @@ public class PostResponse {
     private Long totalUpvotes;
     private Long totalComments;
     private String link;
+    boolean isUpvotedByUser;
     private Instant createdAt;
     private Instant updatedAt;
 }

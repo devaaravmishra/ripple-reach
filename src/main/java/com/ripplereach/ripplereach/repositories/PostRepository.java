@@ -10,5 +10,4 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 public interface PostRepository extends JpaRepository<Post, Long>,
         JpaSpecificationExecutor<Post>,
         PagingAndSortingRepository<Post, Long> {
-    Page<Post> findAllByCommunityId(Long communityId, Pageable pageable);
 }

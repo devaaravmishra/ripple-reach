@@ -99,11 +99,28 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public Authentication getAuthenticatedUser() {
     try {
-      return SecurityContextHolder.getContext().getAuthentication();
+      return getAuthentication();
     } catch (RuntimeException ex) {
       log.error("Error while getting authenticated user");
       throw new RippleReachException("Error while getting authenticated user");
     }
+  }
+
+  @Override
+  public User getCurrentUser() {
+    try {
+      Authentication authentication = getAuthentication();
+      return userService.findByPhone(authentication.getName());
+    } catch (EntityNotFoundException ex) {
+      throw ex;
+    } catch (RuntimeException ex) {
+      log.error("Error while fetching logged-in user", ex);
+      throw new RippleReachException("Error while fetching logged-in user!");
+    }
+  }
+
+  private static Authentication getAuthentication() {
+    return SecurityContextHolder.getContext().getAuthentication();
   }
 
   @Override
@@ -129,8 +146,9 @@ public class AuthServiceImpl implements AuthService {
     }
   }
 
+  @Override
   public boolean isLoggedIn() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Authentication authentication = getAuthentication();
     return !(authentication instanceof AnonymousAuthenticationToken)
         && authentication.isAuthenticated();
   }

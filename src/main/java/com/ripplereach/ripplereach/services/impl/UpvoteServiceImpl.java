@@ -6,14 +6,12 @@ import com.ripplereach.ripplereach.models.Comment;
 import com.ripplereach.ripplereach.models.Post;
 import com.ripplereach.ripplereach.models.Upvote;
 import com.ripplereach.ripplereach.models.User;
-import com.ripplereach.ripplereach.services.CommentService;
-import com.ripplereach.ripplereach.services.PostService;
-import com.ripplereach.ripplereach.services.UpvoteRepository;
-import com.ripplereach.ripplereach.services.UpvoteService;
+import com.ripplereach.ripplereach.services.*;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,29 +23,74 @@ public class UpvoteServiceImpl implements UpvoteService {
     private final UpvoteRepository upvoteRepository;
     private final PostService postService;
     private final CommentService commentService;
+    private final AuthService authService;
 
     @Override
     @Transactional
     public void upvotePost(Long postId, Long userId) {
-        handleUpvote(postId, userId, "post", UpvoteType.POST);
+        try {
+            User currentUser = authService.getCurrentUser();
+
+            if (!currentUser.getId().equals(userId)) {
+                log.error("Unauthorized access to postId: {}, by user Id: {}", postId, userId);
+                throw new AccessDeniedException("Unauthorized user!");
+            }
+
+            handleUpvote(postId, userId, "post", UpvoteType.POST);
+        } catch (RuntimeException ex) {
+           throw ex;
+        }
     }
 
     @Override
     @Transactional
     public void removeUpvoteFromPost(Long postId, Long userId) {
-        handleRemoveUpvote(postId, userId, "post", UpvoteType.POST);
+        try {
+            User currentUser = authService.getCurrentUser();
+
+            if (!currentUser.getId().equals(userId)) {
+                log.error("Unauthorized access to postId: {}, by user Id: {}", postId, userId);
+                throw new AccessDeniedException("Unauthorized user!");
+            }
+
+            handleRemoveUpvote(postId, userId, "post", UpvoteType.POST);
+        } catch (RuntimeException ex) {
+            throw ex;
+        }
     }
 
     @Override
     @Transactional
     public void upvoteComment(Long commentId, Long userId) {
-        handleUpvote(commentId, userId, "comment", UpvoteType.COMMENT);
+        try {
+            User currentUser = authService.getCurrentUser();
+
+            if (!currentUser.getId().equals(userId)) {
+                log.error("Unauthorized access to commentId: {}, by user Id: {}", commentId, userId);
+                throw new AccessDeniedException("Unauthorized user!");
+            }
+
+            handleUpvote(commentId, userId, "comment", UpvoteType.COMMENT);
+        } catch (RuntimeException ex) {
+            throw ex;
+        }
     }
 
     @Override
     @Transactional
     public void removeUpvoteFromComment(Long commentId, Long userId) {
-        handleRemoveUpvote(commentId, userId, "comment", UpvoteType.COMMENT);
+        try {
+            User currentUser = authService.getCurrentUser();
+
+            if (!currentUser.getId().equals(userId)) {
+                log.error("Unauthorized access to commentId: {}, by user Id: {}", commentId, userId);
+                throw new AccessDeniedException("Unauthorized user!");
+            }
+
+            handleRemoveUpvote(commentId, userId, "comment", UpvoteType.COMMENT);
+        } catch (RuntimeException ex) {
+            throw ex;
+        }
     }
 
     private void handleUpvote(Long targetId, Long userId, String targetType, UpvoteType upvoteType) {
@@ -98,7 +141,9 @@ public class UpvoteServiceImpl implements UpvoteService {
         }
     }
 
-    private boolean upvoteExists(Long targetId, Long userId, UpvoteType upvoteType) {
+    @Override
+    @Transactional(readOnly = true)
+    public boolean upvoteExists(Long targetId, Long userId, UpvoteType upvoteType) {
         return switch (upvoteType) {
             case POST -> upvoteRepository.existsByUserIdAndPostId(userId, targetId);
             case COMMENT -> upvoteRepository.existsByUserIdAndCommentId(userId, targetId);

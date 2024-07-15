@@ -17,6 +17,7 @@ public class CommentResponse {
     private PostResponse post;
     private UserResponse author;
     private Long totalUpvotes;
+    boolean isUpvotedByUser;
     private Instant createdAt;
     private Instant updatedAt;
 }
