@@ -71,7 +71,6 @@ public class SecurityConfig {
                     .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories",
                                 "/api/communities",
-                                "/api/posts",
                                 "/api/categories/{categoryId}",
                                 "/api/communities/{communityId}")
                         .permitAll()
