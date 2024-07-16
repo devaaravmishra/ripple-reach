@@ -189,7 +189,10 @@ public class PostServiceImpl implements PostService {
         try {
             Post post = getPostById(postId);
 
-            return postResponseMapper.mapTo(post);
+            PostResponse postResponse = postResponseMapper.mapTo(post);
+            postResponse.setUpvotedByUser(isUpvotedByLoggedInUser(postId));
+
+            return postResponse;
         } catch (EntityNotFoundException ex) {
             log.error("Post not found with id: {}", postId);
             throw ex;

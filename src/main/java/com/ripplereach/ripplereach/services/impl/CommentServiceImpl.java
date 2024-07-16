@@ -1,6 +1,7 @@
 package com.ripplereach.ripplereach.services.impl;
 
 import com.ripplereach.ripplereach.dtos.CommentResponse;
+import com.ripplereach.ripplereach.dtos.CommentUpdateRequest;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
 import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.Comment;
@@ -40,13 +41,13 @@ public class CommentServiceImpl implements CommentService {
             User currentUser = authService.getCurrentUser();
 
             if (!user.getId().equals(currentUser.getId())) {
-                throw new AccessDeniedException("Unauthorized access!");
+                throw new AccessDeniedException("Access Forbidden!");
             }
 
             Comment comment = Comment.builder()
                     .post(post)
                     .author(user)
-                    .content(content)
+                    .content(content.trim())
                     .totalUpvotes(0L)
                     .build();
 
@@ -73,7 +74,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public CommentResponse updateComment(Long commentId, String content) {
+    public CommentResponse updateComment(Long commentId, CommentUpdateRequest commentUpdateRequest) {
         try {
             Comment comment = commentRepository.findById(commentId)
                     .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
@@ -84,9 +85,10 @@ public class CommentServiceImpl implements CommentService {
             Long userId = comment.getAuthor().getId();
 
             if (!userId.equals(currentUser.getId())) {
-                throw new AccessDeniedException("Unauthorized access!");
+                throw new AccessDeniedException("Access Forbidden!");
             }
 
+            String content = commentUpdateRequest.getContent().trim();
             comment.setContent(content);
             Comment updatedComment = commentRepository.save(comment);
 
@@ -136,7 +138,10 @@ public class CommentServiceImpl implements CommentService {
                     .orElseThrow(() ->
                             new EntityNotFoundException("Comment not found with id: " + commentId));
 
-            return commentResponseMapper.mapTo(comment);
+            CommentResponse commentResponse = commentResponseMapper.mapTo(comment);
+            commentResponse.setUpvotedByUser(isUpvotedByLoggedInUser(commentId));
+
+            return commentResponse;
         } catch (EntityNotFoundException ex) {
             log.error("Comment not found with id: {}", commentId);
             throw ex;

@@ -2,6 +2,7 @@ package com.ripplereach.ripplereach.controllers;
 
 import com.ripplereach.ripplereach.dtos.CommentRequest;
 import com.ripplereach.ripplereach.dtos.CommentResponse;
+import com.ripplereach.ripplereach.dtos.CommentUpdateRequest;
 import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.Comment;
 import com.ripplereach.ripplereach.services.CommentService;
@@ -42,7 +43,8 @@ public class CommentController {
     @Operation(
             summary = "Create Comment",
             description = "Creates a new comment.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+            requestBody = @io.swagger.v3.oas.annotations.parameters.
+                    RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = CommentRequest.class)))
     )
     public ResponseEntity<CommentResponse>
@@ -61,13 +63,16 @@ public class CommentController {
     @Operation(
             summary = "Update Comment",
             description = "Updates an existing comment by its ID.",
-            parameters = @Parameter(name = "commentId", description = "ID of the comment to update", required = true),
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+            parameters = @Parameter
+                    (name = "commentId", description = "ID of the comment to update", required = true),
+            requestBody = @io.swagger.v3.oas.annotations.parameters.
+                    RequestBody(content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = CommentUpdateRequest.class)))
     )
     public ResponseEntity<CommentResponse> updateComment(
             @PathVariable Long commentId,
-            @RequestBody String content) {
-        CommentResponse comment = commentService.updateComment(commentId, content);
+            @Valid @RequestBody CommentUpdateRequest commentUpdateRequest) {
+        CommentResponse comment = commentService.updateComment(commentId, commentUpdateRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(comment);
     }
