@@ -12,12 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NotificationRequest {
-    @NotBlank(message = Messages.DEVICE_TOKEN_REQUIRED)
-    private String deviceToken;
+  @NotBlank(message = Messages.DEVICE_TOKEN_REQUIRED)
+  private String deviceToken;
 
-    @NotBlank(message = Messages.TITLE_REQUIRED)
-    private String title;
+  @NotBlank(message = Messages.TITLE_REQUIRED)
+  private String title;
 
-    @NotBlank(message = Messages.BODY_REQUIRED)
-    private String body;
+  @NotBlank(message = Messages.BODY_REQUIRED)
+  private String body;
 }

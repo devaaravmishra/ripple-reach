@@ -12,24 +12,24 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/notifications")
-@Tag(name = "Notification", description = "The Notification API. Contains all the operations that can be performed on a notification.")
+@Tag(
+    name = "Notification",
+    description =
+        "The Notification API. Contains all the operations that can be performed on a"
+            + " notification.")
 @AllArgsConstructor
 public class NotificationController {
 
-    private final FCMService fcmService;
+  private final FCMService fcmService;
 
-    @PostMapping("/send")
-    @SecurityRequirement(name = "Bearer Authentication")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(
-            summary = "Send Notification",
-            description = "Sends a push notification via FCM."
-    )
-    public void sendNotification(@Valid NotificationRequest notificationRequest) {
-        fcmService.sendNotification(
-                notificationRequest.getDeviceToken(),
-                notificationRequest.getTitle(),
-                notificationRequest.getBody()
-        );
-    }
+  @PostMapping("/send")
+  @SecurityRequirement(name = "Bearer Authentication")
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(summary = "Send Notification", description = "Sends a push notification via FCM.")
+  public void sendNotification(@Valid NotificationRequest notificationRequest) {
+    fcmService.sendNotification(
+        notificationRequest.getDeviceToken(),
+        notificationRequest.getTitle(),
+        notificationRequest.getBody());
+  }
 }

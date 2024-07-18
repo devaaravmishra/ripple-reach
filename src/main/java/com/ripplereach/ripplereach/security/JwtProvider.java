@@ -1,5 +1,8 @@
 package com.ripplereach.ripplereach.security;
 
+import java.time.Instant;
+import java.util.Collection;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,10 +13,6 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,10 +32,10 @@ public class JwtProvider {
     return generateTokenWithUserName(principal.getUsername(), principal.getAuthorities());
   }
 
-  public String generateTokenWithUserName(String username, Collection<? extends GrantedAuthority> authorities) {
-    String roles = authorities.stream()
-            .map(GrantedAuthority::getAuthority)
-            .collect(Collectors.joining(","));
+  public String generateTokenWithUserName(
+      String username, Collection<? extends GrantedAuthority> authorities) {
+    String roles =
+        authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
     JwtClaimsSet claims =
         JwtClaimsSet.builder()
@@ -44,7 +43,8 @@ public class JwtProvider {
             .issuedAt(Instant.now())
             .expiresAt(Instant.now().plusMillis(jwtExpirationInMillis))
             .subject(username)
-            .claim("scope", roles).claim("username", username)
+            .claim("scope", roles)
+            .claim("username", username)
             .build();
 
     return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();

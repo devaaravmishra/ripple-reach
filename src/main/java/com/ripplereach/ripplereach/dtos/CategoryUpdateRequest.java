@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryUpdateRequest {
-    @Size(message = Messages.CATEGORY_NAME_SIZE, min = 3, max = 25)
-    private String name;
+  @Size(message = Messages.CATEGORY_NAME_SIZE, min = 3, max = 25)
+  private String name;
 
-    @Size(message = Messages.CATEGORY_DESC_SIZE, min = 10, max = 500)
-    private String description;
+  @Size(message = Messages.CATEGORY_DESC_SIZE, min = 10, max = 500)
+  private String description;
 }

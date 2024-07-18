@@ -8,6 +8,8 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.ripplereach.ripplereach.enums.RoleName;
 import com.ripplereach.ripplereach.security.CustomPasswordEncoder;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,9 +31,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 
 @Configuration
 @RequiredArgsConstructor
@@ -57,25 +56,27 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                        .requestMatchers("/images", "/images/**")
-                        .permitAll()
+                    .requestMatchers("/images", "/images/**")
+                    .permitAll()
                     .requestMatchers("/api/auth/**")
                     .permitAll()
-                        .requestMatchers("/actuator/**")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/users/generate-avatar")
-                        .permitAll()
-                        .requestMatchers("/avatars/**")
-                        .permitAll()
+                    .requestMatchers("/actuator/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/users/generate-avatar")
+                    .permitAll()
+                    .requestMatchers("/avatars/**")
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/users/generate-usernames")
                     .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories",
-                                "/api/communities",
-                                "/api/categories/{categoryId}",
-                                "/api/communities/{communityId}")
-                        .permitAll()
-                        .requestMatchers("/api/categories/**", "/api/communities/**")
-                        .hasAuthority("SCOPE_" + RoleName.ADMIN.name())
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/categories",
+                        "/api/communities",
+                        "/api/categories/{categoryId}",
+                        "/api/communities/{communityId}")
+                    .permitAll()
+                    .requestMatchers("/api/categories/**", "/api/communities/**")
+                    .hasAuthority("SCOPE_" + RoleName.ADMIN.name())
                     .requestMatchers(
                         "/v3/api-docs",
                         "/swagger-ui/index.html",
@@ -92,7 +93,8 @@ public class SecurityConfig {
                     .authenticated())
         .oauth2ResourceServer(
             oAuth2ResourceServerConfigurer ->
-                oAuth2ResourceServerConfigurer.jwt(jwtConfigurer ->
+                oAuth2ResourceServerConfigurer.jwt(
+                    jwtConfigurer ->
                         jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter())))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -119,7 +121,7 @@ public class SecurityConfig {
 
   @Bean
   public JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter() {
-      return new JwtGrantedAuthoritiesConverter();
+    return new JwtGrantedAuthoritiesConverter();
   }
 
   @Bean

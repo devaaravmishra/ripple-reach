@@ -11,6 +11,6 @@ import org.springframework.data.domain.Page;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommunityPostsResponse {
-    private CommunityResponse community;
-    private Page<PostResponseByCommunity> posts;
+  private CommunityResponse community;
+  private Page<PostResponseByCommunity> posts;
 }

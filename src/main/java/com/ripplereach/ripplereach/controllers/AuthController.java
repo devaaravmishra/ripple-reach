@@ -20,7 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "Auth", description = "The Auth API. Contains all the operations that can be performed for authentication and authorization.")
+@Tag(
+    name = "Auth",
+    description =
+        "The Auth API. Contains all the operations that can be performed for authentication and"
+            + " authorization.")
 @AllArgsConstructor
 public class AuthController {
 
@@ -30,9 +34,8 @@ public class AuthController {
 
   @PostMapping("/register")
   @Operation(
-          summary = "User Registration",
-          description = "API which lets a user create a fresh account if they didn't have one before."
-  )
+      summary = "User Registration",
+      description = "API which lets a user create a fresh account if they didn't have one before.")
   public ResponseEntity<RegisterResponse> register(
       @Valid @RequestBody RegisterRequest registerRequest) {
     authService.verifyIdToken(registerRequest.getIdToken());
@@ -53,12 +56,10 @@ public class AuthController {
 
   @PostMapping("/login")
   @Operation(
-          summary = "User Login",
-          description = "API which lets a user log in with their credentials."
-  )
-  public ResponseEntity<LoginResponse> login(
-      @Valid @RequestBody LoginRequest loginRequest) {
-//    authService.verifyIdToken(loginRequest.getIdToken());
+      summary = "User Login",
+      description = "API which lets a user log in with their credentials.")
+  public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+    //    authService.verifyIdToken(loginRequest.getIdToken());
     LoginResponse loginResponse = authService.login(loginRequest);
 
     return new ResponseEntity<>(loginResponse, HttpStatus.OK);
@@ -67,9 +68,8 @@ public class AuthController {
   @PostMapping("/refresh/token")
   @SecurityRequirement(name = "Bearer Authentication")
   @Operation(
-          summary = "Refresh Token",
-          description = "API which generates a new auth token with the help of a refresh token."
-  )
+      summary = "Refresh Token",
+      description = "API which generates a new auth token with the help of a refresh token.")
   public ResponseEntity<AuthResponse> refreshTokens(
       @Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
     AuthResponse authResponse = authService.refreshToken(refreshTokenRequest);
@@ -80,9 +80,10 @@ public class AuthController {
   @PostMapping("/logout")
   @SecurityRequirement(name = "Bearer Authentication")
   @Operation(
-          summary = "User Logout",
-          description = "API which lets users log out of their current session by invalidating their auth tokens."
-  )
+      summary = "User Logout",
+      description =
+          "API which lets users log out of their current session by invalidating their auth"
+              + " tokens.")
   public ResponseEntity<String> logout(@Valid @RequestBody LogoutRequest logoutRequest) {
     authService.logout(logoutRequest);
 

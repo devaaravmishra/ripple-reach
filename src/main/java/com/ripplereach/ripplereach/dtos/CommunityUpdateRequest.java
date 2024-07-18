@@ -14,12 +14,12 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommunityUpdateRequest {
-    @Size(max = 100, min = 5, message = Messages.COMMUNITY_NAME_SIZE)
-    private String name;
+  @Size(max = 100, min = 5, message = Messages.COMMUNITY_NAME_SIZE)
+  private String name;
 
-    @Size(max = 500, message = Messages.COMMUNITY_DESC_SIZE, min = 10)
-    private String desc;
+  @Size(max = 500, message = Messages.COMMUNITY_DESC_SIZE, min = 10)
+  private String desc;
 
-    @ValidFile(maxSize = 5048576) // 5MB size limit
-    private MultipartFile image;
+  @ValidFile(maxSize = 5048576) // 5MB size limit
+  private MultipartFile image;
 }

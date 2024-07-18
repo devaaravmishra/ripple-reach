@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class PostResponseByCommunityMapperImpl implements Mapper<Post, PostResponseByCommunity> {
-    private ModelMapper modelMapper;
+  private ModelMapper modelMapper;
 
-    @Override
-    public Post mapFrom(PostResponseByCommunity postResponseByCommunity) {
-        return modelMapper.map(postResponseByCommunity, Post.class);
-    }
+  @Override
+  public Post mapFrom(PostResponseByCommunity postResponseByCommunity) {
+    return modelMapper.map(postResponseByCommunity, Post.class);
+  }
 
-    @Override
-    public PostResponseByCommunity mapTo(Post post) {
-        return modelMapper.map(post, PostResponseByCommunity.class);
-    }
+  @Override
+  public PostResponseByCommunity mapTo(Post post) {
+    return modelMapper.map(post, PostResponseByCommunity.class);
+  }
 }

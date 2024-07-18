@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class UserResponseMapperImpl implements Mapper<User, UserResponse> {
-    private final ModelMapper modelMapper;
+  private final ModelMapper modelMapper;
 
-    @Override
-    public User mapFrom(UserResponse userResponse) {
-        return modelMapper.map(userResponse, User.class);
-    }
+  @Override
+  public User mapFrom(UserResponse userResponse) {
+    return modelMapper.map(userResponse, User.class);
+  }
 
-    @Override
-    public UserResponse mapTo(User user) {
-        return modelMapper.map(user, UserResponse.class);
-    }
+  @Override
+  public UserResponse mapTo(User user) {
+    return modelMapper.map(user, UserResponse.class);
+  }
 }

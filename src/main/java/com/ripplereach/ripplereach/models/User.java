@@ -2,10 +2,9 @@ package com.ripplereach.ripplereach.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.Instant;
 import java.util.Set;
+import lombok.*;
 
 @Entity
 @Table(name = "app_user")
@@ -42,9 +41,9 @@ public class User {
 
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-          name = "user_roles",
-          joinColumns = @JoinColumn(name = "user_id"),
-          inverseJoinColumns = @JoinColumn(name = "role_id"))
+      name = "user_roles",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "role_id"))
   private Set<Role> roles;
 
   @Column(nullable = false, updatable = false)

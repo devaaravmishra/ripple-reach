@@ -4,33 +4,31 @@ import com.ripplereach.ripplereach.constants.Messages;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostRequest {
-    @NotBlank
-    private String title;
+  @NotBlank private String title;
 
-    @NotBlank
-    private String content;
+  @NotBlank private String content;
 
-    @NotNull
-    private Long authorId;
+  @NotNull private Long authorId;
 
-    @NotNull
-    private Long communityId;
+  @NotNull private Long communityId;
 
-    private List<MultipartFile> attachments;
-    @Pattern(regexp = "[(http(s)?):\\/\\/(www\\.)?a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)",
-            message = Messages.INVALID_URL)
-    private String link;
+  private List<MultipartFile> attachments;
+
+  @Pattern(
+      regexp =
+          "[(http(s)?):\\/\\/(www\\.)?a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)",
+      message = Messages.INVALID_URL)
+  private String link;
 }

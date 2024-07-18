@@ -1,7 +1,6 @@
 package com.ripplereach.ripplereach.models;
 
 import jakarta.persistence.*;
-
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

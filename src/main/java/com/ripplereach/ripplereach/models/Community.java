@@ -3,9 +3,8 @@ package com.ripplereach.ripplereach.models;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.Instant;
+import lombok.*;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -15,41 +14,41 @@ import java.time.Instant;
 @Getter
 @Setter
 public class Community {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String name;
+  @Column(nullable = false, unique = true)
+  private String name;
 
-    @Column(length = 500)
-    private String description;
+  @Column(length = 500)
+  private String description;
 
-    private String imageUrl;
+  private String imageUrl;
 
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+  @Column(nullable = false, updatable = false)
+  private Instant createdAt;
 
-    @Column(nullable = false)
-    private Instant updatedAt;
+  @Column(nullable = false)
+  private Instant updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    @JsonBackReference
-    private Category category;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category_id", nullable = false)
+  @JsonBackReference
+  private Category category;
 
-    @Column(unique = true, nullable = false)
-    private String slug;
+  @Column(unique = true, nullable = false)
+  private String slug;
 
-    @PrePersist
-    protected void onCreate() {
-        Instant now = Instant.now();
-        createdAt = now;
-        updatedAt = now;
-    }
+  @PrePersist
+  protected void onCreate() {
+    Instant now = Instant.now();
+    createdAt = now;
+    updatedAt = now;
+  }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
+  @PreUpdate
+  protected void onUpdate() {
+    updatedAt = Instant.now();
+  }
 }

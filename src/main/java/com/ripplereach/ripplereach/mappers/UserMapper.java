@@ -8,9 +8,8 @@ import com.ripplereach.ripplereach.models.Company;
 import com.ripplereach.ripplereach.models.Role;
 import com.ripplereach.ripplereach.models.University;
 import com.ripplereach.ripplereach.models.User;
-import org.springframework.stereotype.Component;
-
 import java.util.Set;
+import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
@@ -33,9 +32,7 @@ public class UserMapper {
     user.setPhone(registerRequest.getPhone());
 
     if (registerRequest.getRoleName() != null) {
-      Role role = Role.builder()
-              .name(RoleName.valueOf(registerRequest.getRoleName()))
-              .build();
+      Role role = Role.builder().name(RoleName.valueOf(registerRequest.getRoleName())).build();
 
       user.setRoles(Set.of(role));
     }
@@ -53,7 +50,8 @@ public class UserMapper {
       user.setCompany(company);
       user.setProfession(userPartialUpdateRequest.getProfession());
     } else if (userPartialUpdateRequest.getUniversity() != null) {
-      University university = University.builder().name(userPartialUpdateRequest.getUniversity()).build();
+      University university =
+          University.builder().name(userPartialUpdateRequest.getUniversity()).build();
 
       user.setUniversity(university);
     }

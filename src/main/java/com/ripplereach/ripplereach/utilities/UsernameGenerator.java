@@ -2,16 +2,15 @@ package com.ripplereach.ripplereach.utilities;
 
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
 import com.ripplereach.ripplereach.services.UserService;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
@@ -142,11 +141,13 @@ public class UsernameGenerator {
   }
 
   private static Set<String> generateBaseUsernames(int count) {
-    return RANDOM.ints(count, 0, ADJECTIVES.length)
-            .mapToObj(i -> StringUtils.
-                    capitalize(ADJECTIVES[i]) +
-                    StringUtils.capitalize(NOUNS[RANDOM.nextInt(NOUNS.length)]))
-            .collect(Collectors.toSet());
+    return RANDOM
+        .ints(count, 0, ADJECTIVES.length)
+        .mapToObj(
+            i ->
+                StringUtils.capitalize(ADJECTIVES[i])
+                    + StringUtils.capitalize(NOUNS[RANDOM.nextInt(NOUNS.length)]))
+        .collect(Collectors.toSet());
   }
 
   private static String generateUsernameWithSuffix(Set<String> existingUsernames) {
@@ -155,13 +156,14 @@ public class UsernameGenerator {
     String username;
 
     do {
-      baseUsername = StringUtils.capitalize(ADJECTIVES[RANDOM.nextInt(ADJECTIVES.length)]) +
-              StringUtils.capitalize(NOUNS[RANDOM.nextInt(NOUNS.length)]);
+      baseUsername =
+          StringUtils.capitalize(ADJECTIVES[RANDOM.nextInt(ADJECTIVES.length)])
+              + StringUtils.capitalize(NOUNS[RANDOM.nextInt(NOUNS.length)]);
       suffix = 10 + RANDOM.nextInt(990); // 990 is used to include 999 in the range
       username = baseUsername + suffix;
-    } while (existingUsernames.contains(username) ||
-            cache.contains(username) ||
-            userService.existsByUsername(username));
+    } while (existingUsernames.contains(username)
+        || cache.contains(username)
+        || userService.existsByUsername(username));
 
     cache.add(username);
     return username;
@@ -169,9 +171,10 @@ public class UsernameGenerator {
 
   public static List<String> generateUsernames(int count) {
     count = Math.min(count, 50);
-    return RANDOM.ints(count, 0, ADJECTIVES.length)
-            .parallel()
-            .mapToObj(i -> generateUsername())
-            .collect(Collectors.toList());
+    return RANDOM
+        .ints(count, 0, ADJECTIVES.length)
+        .parallel()
+        .mapToObj(i -> generateUsername())
+        .collect(Collectors.toList());
   }
 }

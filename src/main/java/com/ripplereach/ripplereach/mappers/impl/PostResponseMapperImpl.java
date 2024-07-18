@@ -11,15 +11,15 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class PostResponseMapperImpl implements Mapper<Post, PostResponse> {
 
-    private ModelMapper modelMapper;
+  private ModelMapper modelMapper;
 
-    @Override
-    public PostResponse mapTo(Post post) {
-        return modelMapper.map(post, PostResponse.class);
-    }
+  @Override
+  public PostResponse mapTo(Post post) {
+    return modelMapper.map(post, PostResponse.class);
+  }
 
-    @Override
-    public Post mapFrom(PostResponse postResponseDto) {
-        return modelMapper.map(postResponseDto, Post.class);
-    }
+  @Override
+  public Post mapFrom(PostResponse postResponseDto) {
+    return modelMapper.map(postResponseDto, Post.class);
+  }
 }

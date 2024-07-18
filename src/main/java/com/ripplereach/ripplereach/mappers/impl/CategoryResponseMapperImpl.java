@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class CategoryResponseMapperImpl implements Mapper<Category, CategoryResponse> {
-    private ModelMapper modelMapper;
+  private ModelMapper modelMapper;
 
-    @Override
-    public Category mapFrom(CategoryResponse categoryResponse) {
-        return modelMapper.map(categoryResponse, Category.class);
-    }
+  @Override
+  public Category mapFrom(CategoryResponse categoryResponse) {
+    return modelMapper.map(categoryResponse, Category.class);
+  }
 
-    @Override
-    public CategoryResponse mapTo(Category category) {
-        return modelMapper.map(category, CategoryResponse.class);
-    }
+  @Override
+  public CategoryResponse mapTo(Category category) {
+    return modelMapper.map(category, CategoryResponse.class);
+  }
 }

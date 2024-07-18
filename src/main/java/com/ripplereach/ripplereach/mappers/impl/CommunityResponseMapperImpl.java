@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class CommunityResponseMapperImpl implements Mapper<Community, CommunityResponse> {
-    private ModelMapper modelMapper;
+  private ModelMapper modelMapper;
 
-    @Override
-    public Community mapFrom(CommunityResponse communityResponse) {
-        return modelMapper.map(communityResponse, Community.class);
-    }
+  @Override
+  public Community mapFrom(CommunityResponse communityResponse) {
+    return modelMapper.map(communityResponse, Community.class);
+  }
 
-    @Override
-    public CommunityResponse mapTo(Community community) {
-        return modelMapper.map(community, CommunityResponse.class);
-    }
+  @Override
+  public CommunityResponse mapTo(Community community) {
+    return modelMapper.map(community, CommunityResponse.class);
+  }
 }

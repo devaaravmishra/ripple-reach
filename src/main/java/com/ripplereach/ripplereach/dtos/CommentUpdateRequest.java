@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentUpdateRequest {
-    @NotBlank
-    @Size(max = 500)
-    private String content;
+  @NotBlank
+  @Size(max = 500)
+  private String content;
 }

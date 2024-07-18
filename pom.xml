@@ -178,7 +178,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.10</version>
+				<version>0.8.12</version>
 				<executions>
 					<!-- Initialise Jacoco -->
 					<execution>
@@ -214,12 +214,6 @@
 									</limits>
 								</rule>
 							</rules>
-							<excludes>
-								<!-- Exclude main class -->
-								<exclude>**/*com/aarav/booksapi/BooksApiApplication.class</exclude>
-								<!-- Exclude domain classes -->
-								<exclude>**/*com/aarav/booksapi/domain/**</exclude>
-							</excludes>
 						</configuration>
 					</execution>
 					<execution>

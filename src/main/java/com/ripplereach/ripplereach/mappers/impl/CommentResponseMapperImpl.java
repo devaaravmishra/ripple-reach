@@ -11,15 +11,15 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class CommentResponseMapperImpl implements Mapper<Comment, CommentResponse> {
 
-    private ModelMapper modelMapper;
+  private ModelMapper modelMapper;
 
-    @Override
-    public Comment mapFrom(CommentResponse commentResponse) {
-        return modelMapper.map(commentResponse, Comment.class);
-    }
+  @Override
+  public Comment mapFrom(CommentResponse commentResponse) {
+    return modelMapper.map(commentResponse, Comment.class);
+  }
 
-    @Override
-    public CommentResponse mapTo(Comment comment) {
-        return modelMapper.map(comment, CommentResponse.class);
-    }
+  @Override
+  public CommentResponse mapTo(Comment comment) {
+    return modelMapper.map(comment, CommentResponse.class);
+  }
 }

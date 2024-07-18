@@ -16,17 +16,17 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommunityRequest {
-    @NotBlank(message = Messages.COMMUNITY_NAME_REQUIRED)
-    @Size(max = 100, message = Messages.COMMUNITY_NAME_SIZE)
-    private String name;
+  @NotBlank(message = Messages.COMMUNITY_NAME_REQUIRED)
+  @Size(max = 100, message = Messages.COMMUNITY_NAME_SIZE)
+  private String name;
 
-    @NotBlank(message = Messages.COMMUNITY_DESC_REQUIRED)
-    @Size(max = 500, message = Messages.COMMUNITY_DESC_SIZE, min = 10)
-    private String desc;
+  @NotBlank(message = Messages.COMMUNITY_DESC_REQUIRED)
+  @Size(max = 500, message = Messages.COMMUNITY_DESC_SIZE, min = 10)
+  private String desc;
 
-    @ValidFile(message = Messages.COMMUNITY_IMAGE_REQUIRED, maxSize = 5048576) // 5MB size limit
-    private MultipartFile image;
+  @ValidFile(message = Messages.COMMUNITY_IMAGE_REQUIRED, maxSize = 5048576) // 5MB size limit
+  private MultipartFile image;
 
-    @NotNull(message = Messages.COMMUNITY_ID_REQUIRED)
-    private Long categoryId;
+  @NotNull(message = Messages.COMMUNITY_ID_REQUIRED)
+  private Long categoryId;
 }

@@ -13,13 +13,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentRequest {
-    @NotNull
-    private Long postId;
+  @NotNull private Long postId;
 
-    @NotNull
-    private Long userId;
+  @NotNull private Long userId;
 
-    @NotBlank
-    @Size(max = 500)
-    private String content;
+  @NotBlank
+  @Size(max = 500)
+  private String content;
 }

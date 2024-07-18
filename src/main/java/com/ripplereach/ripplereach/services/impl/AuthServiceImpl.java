@@ -10,6 +10,8 @@ import com.ripplereach.ripplereach.services.AuthService;
 import com.ripplereach.ripplereach.services.RefreshTokenService;
 import com.ripplereach.ripplereach.services.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import java.time.Instant;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -19,9 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -39,27 +38,26 @@ public class AuthServiceImpl implements AuthService {
   @Override
   @Transactional
   public User register(User user) {
-      return userService.create(user);
+    return userService.create(user);
   }
 
   @Override
   @Transactional
   public LoginResponse login(LoginRequest loginRequest) {
-      User userEntity = userService.findByPhone(loginRequest.getPhone());
-      AuthResponse authResponse = generateAuthenticationToken(userEntity);
+    User userEntity = userService.findByPhone(loginRequest.getPhone());
+    AuthResponse authResponse = generateAuthenticationToken(userEntity);
 
-      return LoginResponse.builder()
-          .message("Success")
-          .user(userResponseMapper.mapTo(userEntity))
-          .auth(authResponse)
-          .build();
+    return LoginResponse.builder()
+        .message("Success")
+        .user(userResponseMapper.mapTo(userEntity))
+        .auth(authResponse)
+        .build();
   }
 
   @Override
   @Transactional
   public void logout(LogoutRequest logoutRequest) {
-    RefreshToken refreshToken = refreshTokenService
-            .findByToken(logoutRequest.getRefreshToken());
+    RefreshToken refreshToken = refreshTokenService.findByToken(logoutRequest.getRefreshToken());
 
     refreshTokenService.deleteRefreshToken(refreshToken.getToken());
   }
@@ -76,7 +74,8 @@ public class AuthServiceImpl implements AuthService {
     log.info("Attempting to authenticate user with phone: {}", user.getPhone());
 
     try {
-      Authentication authenticate = authenticationManager.authenticate(
+      Authentication authenticate =
+          authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(user.getPhone(), user.getPhone()));
 
       SecurityContextHolder.getContext().setAuthentication(authenticate);
@@ -85,11 +84,11 @@ public class AuthServiceImpl implements AuthService {
       RefreshToken refreshToken = refreshTokenService.generateRefreshToken();
 
       return AuthResponse.builder()
-              .token(token)
-              .refreshToken(refreshToken.getToken())
-              .expiresAt(Instant.ofEpochSecond(jwtProvider.getJwtExpirationInMillis()))
-              .username(user.getUsername())
-              .build();
+          .token(token)
+          .refreshToken(refreshToken.getToken())
+          .expiresAt(Instant.ofEpochSecond(jwtProvider.getJwtExpirationInMillis()))
+          .username(user.getUsername())
+          .build();
     } catch (Exception e) {
       log.error("Authentication failed: {}", e.getMessage());
       throw new RippleReachException("Authentication failed", e);
@@ -129,11 +128,11 @@ public class AuthServiceImpl implements AuthService {
     try {
       refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
 
-      String username = Optional.ofNullable(refreshTokenRequest.getUsername())
-              .map(String::trim)
-              .orElse("");
+      String username =
+          Optional.ofNullable(refreshTokenRequest.getUsername()).map(String::trim).orElse("");
 
-      User existingUser = username.isEmpty()
+      User existingUser =
+          username.isEmpty()
               ? userService.findByPhone(getAuthenticatedUser().getName())
               : userService.findByUsername(username);
 
@@ -141,8 +140,12 @@ public class AuthServiceImpl implements AuthService {
     } catch (EntityNotFoundException ex) {
       throw ex;
     } catch (RuntimeException ex) {
-      log.error("Error generating token for refreshToken: {} {}", refreshTokenRequest.getRefreshToken(), ex.getMessage());
-      throw new RippleReachException("Error generating token for refreshToken: " + refreshTokenRequest.getRefreshToken());
+      log.error(
+          "Error generating token for refreshToken: {} {}",
+          refreshTokenRequest.getRefreshToken(),
+          ex.getMessage());
+      throw new RippleReachException(
+          "Error generating token for refreshToken: " + refreshTokenRequest.getRefreshToken());
     }
   }
 

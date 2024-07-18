@@ -5,13 +5,12 @@ import com.ripplereach.ripplereach.models.RefreshToken;
 import com.ripplereach.ripplereach.repositories.RefreshTokenRepository;
 import com.ripplereach.ripplereach.services.RefreshTokenService;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Slf4j
