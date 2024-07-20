@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AvatarGenerator {
-
   @Autowired private List<String> avatarListBean;
 
   private static List<String> avatarList;
