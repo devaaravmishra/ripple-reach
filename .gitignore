@@ -46,6 +46,7 @@ target/
 *.pub
 google-services.json
 ripplereach-firebase-adminsdk.json
+app.yaml
 
 # IDE files
 *.iml
