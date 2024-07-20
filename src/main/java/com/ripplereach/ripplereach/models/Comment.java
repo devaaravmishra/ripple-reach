@@ -23,11 +23,11 @@ public class Comment {
   @Column(columnDefinition = "TEXT", nullable = false)
   private String content;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "post_id", nullable = false)
   private Post post;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "author_id", nullable = false)
   private User author;
 
