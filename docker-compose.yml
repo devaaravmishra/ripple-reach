@@ -4,3 +4,6 @@ services:
   postgres:
     image: postgres
     restart: unless-stopped
+  app:
+    image: aaaravv/ripplereach
+    restart: unless-stopped
