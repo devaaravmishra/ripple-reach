@@ -6,4 +6,6 @@ public interface ImageService {
   String saveImage(MultipartFile imageFile);
 
   byte[] retrieveImage(String filePath);
+
+  String generateSignedUrl(String fileName);
 }
