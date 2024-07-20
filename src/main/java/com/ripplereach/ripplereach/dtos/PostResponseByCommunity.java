@@ -1,6 +1,5 @@
 package com.ripplereach.ripplereach.dtos;
 
-import com.ripplereach.ripplereach.models.PostAttachment;
 import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -17,7 +16,7 @@ public class PostResponseByCommunity {
   private String title;
   private String content;
   private UserResponse author;
-  private List<PostAttachment> attachments;
+  private List<PostAttachmentResponse> attachments;
   private Long totalUpvotes;
   private Long totalComments;
   private String link;
