@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -43,7 +44,7 @@ public class PostServiceImpl implements PostService {
   @Transactional
   public PostResponse create(PostRequest postRequest) {
     try {
-      User author = userService.findById(postRequest.getAuthorId());
+      User author = userService.getUserById(postRequest.getAuthorId());
 
       // check whether the authenticated user is creating the post
       Jwt principal = (Jwt) authService.getAuthenticatedUser().getPrincipal();
@@ -56,17 +57,7 @@ public class PostServiceImpl implements PostService {
 
       Community community = communityService.findById(postRequest.getCommunityId());
 
-      List<PostAttachment> attachments = new ArrayList<>();
-      if (postRequest.getAttachments() != null) {
-        for (MultipartFile file : postRequest.getAttachments()) {
-          String fileName = file.getOriginalFilename();
-          String fileUrl =
-              saveFile(file); // Implement this method to save the file and return its URL
-          PostAttachment attachment =
-              PostAttachment.builder().fileName(fileName).url(fileUrl).build();
-          attachments.add(attachment);
-        }
-      }
+      List<PostAttachment> attachments = getPostAttachments(postRequest.getAttachments());
 
       Post post =
           Post.builder()
@@ -120,7 +111,6 @@ public class PostServiceImpl implements PostService {
               post -> {
                 PostResponse postResponse = postResponseMapper.mapTo(post);
                 boolean isUpvoted = isUpvotedByLoggedInUser(post.getId());
-                System.out.println("is upvoted: " + isUpvoted);
                 postResponse.setUpvotedByUser(isUpvoted);
                 return postResponse;
               });
@@ -227,21 +217,41 @@ public class PostServiceImpl implements PostService {
 
   @Override
   @Transactional
-  public PostResponse update(Long postId, PostRequest postRequest) {
+  public PostResponse update(Long postId, PostUpdateRequest postUpdateRequest) {
     try {
       Post post = getPostById(postId);
+      User author = post.getAuthor();
 
       // check whether the authenticated user is updating the post
       Jwt principal = (Jwt) authService.getAuthenticatedUser().getPrincipal();
-      if (!principal.getSubject().equals(post.getAuthor().getPhone())) {
+      if (!principal.getSubject().equals(author.getPhone())) {
         log.error(
             "Unable to update the post, access forbidden attempted by userId: {}",
-            postRequest.getAuthorId());
+            post.getAuthor().getId());
         throw new AccessDeniedException("Unable to update the post, access forbidden");
       }
 
-      post.setTitle(postRequest.getTitle());
-      post.setContent(postRequest.getContent());
+      String title = StringUtils.trim(postUpdateRequest.getTitle());
+      String content = StringUtils.trim(postUpdateRequest.getContent());
+      String link = StringUtils.trim(postUpdateRequest.getLink());
+
+      if (title != null) {
+        post.setTitle(title);
+      }
+
+      if (content != null) {
+        post.setContent(content);
+      }
+
+      if (postUpdateRequest.getAttachments() != null) {
+        List<PostAttachment> attachments = getPostAttachments(postUpdateRequest.getAttachments());
+        post.getAttachments().clear();
+        post.getAttachments().addAll(attachments);
+      }
+
+      if (link != null) {
+        post.setLink(link);
+      }
 
       Post updatedPost = postRepository.save(post);
 
@@ -322,7 +332,6 @@ public class PostServiceImpl implements PostService {
       }
 
       User currentUser = authService.getCurrentUser();
-      System.out.println("current user id: " + currentUser.getId() + " post id: " + targetId);
 
       return upvoteRepository.existsByUserIdAndPostId(currentUser.getId(), targetId);
     } catch (EntityNotFoundException ex) {
@@ -330,6 +339,21 @@ public class PostServiceImpl implements PostService {
     } catch (RuntimeException ex) {
       throw new RippleReachException(ex.getMessage());
     }
+  }
+
+  private List<PostAttachment> getPostAttachments(List<MultipartFile> postAttachments) {
+    List<PostAttachment> attachments = new ArrayList<>();
+    if (postAttachments != null) {
+      for (MultipartFile file : postAttachments) {
+        String fileName = file.getOriginalFilename();
+        String fileUrl =
+            saveFile(file); // Implement this method to save the file and return its URL
+        PostAttachment attachment =
+            PostAttachment.builder().fileName(fileName).url(fileUrl).build();
+        attachments.add(attachment);
+      }
+    }
+    return attachments;
   }
 
   private static String removeAllWhitespace(String search) {

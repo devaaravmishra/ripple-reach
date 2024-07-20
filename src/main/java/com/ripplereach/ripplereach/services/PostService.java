@@ -3,6 +3,7 @@ package com.ripplereach.ripplereach.services;
 import com.ripplereach.ripplereach.dtos.CommunityPostsResponse;
 import com.ripplereach.ripplereach.dtos.PostRequest;
 import com.ripplereach.ripplereach.dtos.PostResponse;
+import com.ripplereach.ripplereach.dtos.PostUpdateRequest;
 import com.ripplereach.ripplereach.models.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +21,7 @@ public interface PostService {
 
   Post getPostById(Long postId);
 
-  PostResponse update(Long postId, PostRequest postRequest);
+  PostResponse update(Long postId, PostUpdateRequest postUpdateRequest);
 
   void delete(Long postId);
 
