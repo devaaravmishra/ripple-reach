@@ -17,17 +17,22 @@ import com.ripplereach.ripplereach.utilities.AvatarGenerator;
 import com.ripplereach.ripplereach.utilities.HashUtils;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 @Transactional
@@ -152,89 +157,23 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public void deleteByUsername(String username, boolean hardDelete) {
-    try {
-      User userEntity = getUserByUsername(username);
-
-      if (hardDelete) {
-        userRepository.delete(userEntity);
-        log.info(
-            "User with userId {}, username {} is hard deleted.",
-            userEntity.getId(),
-            userEntity.getUsername());
-        return;
-      }
-
-      userEntity.setDeletedAt(Instant.now());
-      User deletedUser = userRepository.save(userEntity);
-
-      log.info(
-          "User with userId {}, username {} is soft deleted.",
-          deletedUser.getId(),
-          deletedUser.getUsername());
-    } catch (RuntimeException ex) {
-      log.error("Error while deleting user with username {}", username);
-      throw new RippleReachException("Error while deleting user!");
-    }
+    deleteUser(userRepository::findByUsername, username, hardDelete);
   }
 
   @Override
   @Transactional
   public void deleteById(Long userId, boolean hardDelete) {
-    try {
-      User userEntity = getUserById(userId);
-
-      if (hardDelete) {
-        userRepository.delete(userEntity);
-        log.info(
-            "User with userId {}, username {} is hard deleted.",
-            userEntity.getId(),
-            userEntity.getUsername());
-        return;
-      }
-
-      userEntity.setDeletedAt(Instant.now());
-      User deletedUser = userRepository.save(userEntity);
-
-      log.info(
-          "User with userId {}, username {} is soft deleted.",
-          deletedUser.getId(),
-          deletedUser.getUsername());
-    } catch (EntityNotFoundException ex) {
-      throw ex;
-    } catch (RuntimeException ex) {
-      log.error("Error while deleting user with userId: {}", userId, ex);
-      throw new RippleReachException("Error while deleting user!");
-    }
+    deleteUser(userRepository::findById, userId, hardDelete);
   }
 
   @Override
   @Transactional
   public void deleteByPhone(String phone, boolean hardDelete) {
-    try {
-      User userEntity = getUserByPhone(phone);
-
-      if (hardDelete) {
-        userRepository.delete(userEntity);
-        log.info(
-            "User with userId {}, username {} is hard deleted.",
-            userEntity.getId(),
-            userEntity.getUsername());
-        return;
-      }
-
-      userEntity.setDeletedAt(Instant.now());
-      User deletedUser = userRepository.save(userEntity);
-
-      log.info(
-          "User with userId {}, username {} is soft deleted.",
-          deletedUser.getId(),
-          deletedUser.getUsername());
-    } catch (EntityNotFoundException ex) {
-      throw ex;
-    } catch (RuntimeException ex) {
-      log.error("Error while deleting user with phone: {}", phone, ex);
-      throw new RippleReachException("Error while deleting user!");
+    if (!HashUtils.verifyHash(phone)) {
+      phone = generatePhoneHash(phone);
     }
+
+    deleteUser(userRepository::findByPhone, phone, hardDelete);
   }
 
   private UserResponse saveUserDetails(Long userId, User user) {
@@ -242,6 +181,18 @@ public class UserServiceImpl implements UserService {
       User existingUser = getUserById(userId);
 
       user.setId(existingUser.getId());
+
+      User currentUser = getCurrentUser();
+
+      boolean canDeleteUser = !currentUser.getPhone().equals(existingUser.getPhone())
+              || currentUser.getRoles().stream().anyMatch(role -> role.getName().equals(RoleName.ADMIN));
+
+      if (!canDeleteUser) {
+        log.error("Access Denied while attempt to delete user with id: {} by user with id: {}",
+                existingUser.getId(), currentUser.getId()
+        );
+        throw new AccessDeniedException("Access denied unauthorized access to resource!");
+      }
 
       boolean isUsernamePresent = !user.getUsername().isEmpty();
       boolean isCompanyPresent = user.getCompany() != null;
@@ -288,6 +239,49 @@ public class UserServiceImpl implements UserService {
     } catch (RuntimeException ex) {
       log.error("Error while updating user!");
       throw new RuntimeException("Error while updating user!", ex);
+    }
+  }
+
+  private <T> void deleteUser(Function<T, Optional<User>> findUser, T identifier, boolean hardDelete) {
+    try {
+      User userEntity = findUser.apply(identifier).orElseThrow(() -> {
+        log.error("User not found with identifier: {}", identifier);
+        return new EntityNotFoundException("Can't find user with identifier: " + identifier);
+      });
+
+      User currentUser = getCurrentUser();
+
+      boolean canDeleteUser = !currentUser.getPhone().equals(userEntity.getPhone())
+              || currentUser.getRoles().stream().anyMatch(role -> role.getName().equals(RoleName.ADMIN));
+
+      if (!canDeleteUser) {
+        log.error("Access Denied while attempting to delete user with id: {} by user with id: {}",
+                userEntity.getId(), currentUser.getId()
+        );
+        throw new AccessDeniedException("Access denied unauthorized access to resource!");
+      }
+
+      if (hardDelete) {
+        userRepository.delete(userEntity);
+        log.info(
+                "User with userId {}, username {} is hard deleted.",
+                userEntity.getId(),
+                userEntity.getUsername());
+        return;
+      }
+
+      userEntity.setDeletedAt(Instant.now());
+      User deletedUser = userRepository.save(userEntity);
+
+      log.info(
+              "User with userId {}, username {} is soft deleted.",
+              deletedUser.getId(),
+              deletedUser.getUsername());
+    } catch (EntityNotFoundException | AccessDeniedException ex) {
+      throw ex;
+    } catch (RuntimeException ex) {
+      log.error("Error while deleting user with identifier: {}", identifier, ex);
+      throw new RippleReachException("Error while deleting user!");
     }
   }
 
@@ -362,6 +356,22 @@ public class UserServiceImpl implements UserService {
     Set<Role> roles = Collections.singleton(roleService.createRole(RoleName.USER));
 
     user.setRoles(roles);
+  }
+
+  private User getCurrentUser() {
+    try {
+      Authentication authentication = getAuthentication();
+      return getUserByPhone(authentication.getName());
+    } catch (EntityNotFoundException ex) {
+      throw ex;
+    } catch (RuntimeException ex) {
+      log.error("Error while fetching logged-in user", ex);
+      throw new RippleReachException("Error while fetching logged-in user!");
+    }
+  }
+
+  private static Authentication getAuthentication() {
+    return SecurityContextHolder.getContext().getAuthentication();
   }
 
   private static String generatePhoneHash(String phone) {

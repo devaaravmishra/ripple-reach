@@ -127,6 +127,12 @@ public class CommentServiceImpl implements CommentService {
               .orElseThrow(
                   () -> new EntityNotFoundException("Comment not found with id: " + commentId));
 
+      // check whether the comment author is deleting the comment
+      User currentUser = authService.getCurrentUser();
+      if (!comment.getAuthor().getId().equals(currentUser.getId())) {
+        throw new AccessDeniedException("Access Forbidden!");
+      }
+
       // Decrement the comment count in the post
       Post post = comment.getPost();
       post.setTotalComments(Math.max(post.getTotalComments() - 1, 0));
@@ -135,7 +141,7 @@ public class CommentServiceImpl implements CommentService {
       commentRepository.delete(comment);
 
       log.info("Comment with commentId: {} is deleted successfully", commentId);
-    } catch (EntityNotFoundException ex) {
+    } catch (EntityNotFoundException | AccessDeniedException ex) {
       throw ex;
     } catch (RuntimeException ex) {
       log.error("Error while deleting the comment with id: {}", commentId);

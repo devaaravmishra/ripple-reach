@@ -11,8 +11,6 @@ import com.ripplereach.ripplereach.repositories.PostRepository;
 import com.ripplereach.ripplereach.services.*;
 import com.ripplereach.ripplereach.specifications.PostSpecification;
 import jakarta.persistence.EntityNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +22,9 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -274,6 +275,18 @@ public class PostServiceImpl implements PostService {
   @Transactional
   public void delete(Long postId) {
     try {
+      // Check whether the authenticated user is the author of the post
+      Post post = getPostById(postId);
+      User author = post.getAuthor();
+
+      Jwt principal = (Jwt) authService.getAuthenticatedUser().getPrincipal();
+      if (!principal.getSubject().equals(author.getPhone())) {
+        log.error(
+                "Unable to delete the post, access forbidden attempted by userId: {}",
+                post.getAuthor().getId());
+        throw new AccessDeniedException("Unable to delete the post, access forbidden");
+      }
+
       postRepository.deleteById(postId);
       log.info("Post with id {} deleted successfully", postId);
     } catch (RuntimeException ex) {
