@@ -5,7 +5,7 @@ import com.ripplereach.ripplereach.models.User;
 import org.springframework.security.core.Authentication;
 
 public interface AuthService {
-  User register(User user);
+  RegisterResponse register(User user);
 
   LoginResponse login(LoginRequest loginRequest);
 

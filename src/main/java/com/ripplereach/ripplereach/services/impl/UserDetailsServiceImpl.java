@@ -24,7 +24,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   @Override
   @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String phone) {
-    User user = userService.findByPhone(phone);
+    User user = userService.getUserByPhone(phone);
     Set<GrantedAuthority> authorities =
         user.getRoles().stream()
             .map(role -> new SimpleGrantedAuthority(role.getName().name()))

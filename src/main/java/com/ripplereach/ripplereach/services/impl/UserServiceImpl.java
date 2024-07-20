@@ -1,7 +1,9 @@
 package com.ripplereach.ripplereach.services.impl;
 
+import com.ripplereach.ripplereach.dtos.UserResponse;
 import com.ripplereach.ripplereach.enums.RoleName;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
+import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.models.Company;
 import com.ripplereach.ripplereach.models.Role;
 import com.ripplereach.ripplereach.models.University;
@@ -37,11 +39,14 @@ public class UserServiceImpl implements UserService {
   private final UniversityService universityService;
   private final CompanyService companyService;
   private final RoleService roleService;
+  private final Mapper<User, UserResponse> userResponseMapper;
 
   @Override
   @Transactional(readOnly = true)
-  public User findByUsername(String username) {
-    return getUserByUsername(username);
+  public UserResponse findByUsername(String username) {
+    User user = getUserByUsername(username);
+
+    return userResponseMapper.mapTo(user);
   }
 
   @Override
@@ -62,19 +67,23 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional(readOnly = true)
-  public User findByPhone(String phone) {
-    return getUserByPhone(phone);
+  public UserResponse findByPhone(String phone) {
+    User user = getUserByPhone(phone);
+
+    return userResponseMapper.mapTo(user);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public User findById(Long userId) {
-    return getUserById(userId);
+  public UserResponse findById(Long userId) {
+    User user = getUserById(userId);
+
+    return userResponseMapper.mapTo(user);
   }
 
   @Override
   @Transactional
-  public User create(User user) {
+  public UserResponse create(User user) {
     try {
       String oneWayPhoneHex = generatePhoneHash(user.getPhone());
 
@@ -118,7 +127,7 @@ public class UserServiceImpl implements UserService {
           userEntity.getId(),
           userEntity.getUsername());
 
-      return userEntity;
+      return userResponseMapper.mapTo(userEntity);
     } catch (EntityExistsException ex) {
       throw ex;
     } catch (RuntimeException ex) {
@@ -130,13 +139,13 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public User update(Long userId, User user) {
+  public UserResponse update(Long userId, User user) {
     return saveUserDetails(userId, user);
   }
 
   @Override
   @Transactional
-  public User partialUpdate(Long userId, User user) {
+  public UserResponse partialUpdate(Long userId, User user) {
     return saveUserDetails(userId, user);
   }
 
@@ -228,7 +237,7 @@ public class UserServiceImpl implements UserService {
     }
   }
 
-  private User saveUserDetails(Long userId, User user) {
+  private UserResponse saveUserDetails(Long userId, User user) {
     try {
       User existingUser = getUserById(userId);
 
@@ -273,7 +282,7 @@ public class UserServiceImpl implements UserService {
           updatedUser.getId(),
           updatedUser.getUsername());
 
-      return updatedUser;
+      return userResponseMapper.mapTo(updatedUser);
     } catch (EntityNotFoundException | HttpClientErrorException ex) {
       throw ex;
     } catch (RuntimeException ex) {
@@ -282,7 +291,7 @@ public class UserServiceImpl implements UserService {
     }
   }
 
-  private User getUserById(Long userId) {
+  public User getUserById(Long userId) {
     try {
       Optional<User> userEntity = userRepository.findById(userId);
 
@@ -300,7 +309,7 @@ public class UserServiceImpl implements UserService {
     }
   }
 
-  private User getUserByPhone(String phone) {
+  public User getUserByPhone(String phone) {
     try {
       if (!HashUtils.verifyHash(phone)) {
         phone = generatePhoneHash(phone);
@@ -316,12 +325,12 @@ public class UserServiceImpl implements UserService {
     } catch (EntityNotFoundException ex) {
       throw ex;
     } catch (RuntimeException ex) {
-      log.error("Error while finding user with requested phone");
-      throw new RippleReachException("Error finding user with required phone");
+      log.error("Error while finding user with requested phone: {}", phone, ex);
+      throw new RippleReachException("Error finding user with required phone: " + phone);
     }
   }
 
-  private User getUserByUsername(String username) {
+  public User getUserByUsername(String username) {
     try {
       Optional<User> userEntity = userRepository.findByUsername(username);
 

@@ -3,6 +3,7 @@ package com.ripplereach.ripplereach.controllers;
 import com.ripplereach.ripplereach.dtos.CommunityPostsResponse;
 import com.ripplereach.ripplereach.dtos.PostRequest;
 import com.ripplereach.ripplereach.dtos.PostResponse;
+import com.ripplereach.ripplereach.dtos.PostUpdateRequest;
 import com.ripplereach.ripplereach.services.PostService;
 import com.ripplereach.ripplereach.utilities.SortValidator;
 import io.swagger.v3.oas.annotations.Operation;
@@ -133,7 +134,7 @@ public class PostController {
     return ResponseEntity.status(HttpStatus.OK).body(posts);
   }
 
-  @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PatchMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @SecurityRequirement(name = "Bearer Authentication")
   @Operation(
       summary = "Update Post",
@@ -143,15 +144,15 @@ public class PostController {
               content =
                   @Content(
                       mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                      schema = @Schema(type = "object", implementation = PostRequest.class))),
+                      schema = @Schema(type = "object", implementation = PostUpdateRequest.class))),
       parameters =
           @Parameter(
               name = "postId",
               description = "ID of the post to be updated",
               required = true))
   public ResponseEntity<PostResponse> updatePost(
-      @PathVariable Long postId, @Valid @ModelAttribute PostRequest postRequest) {
-    PostResponse post = postService.update(postId, postRequest);
+      @PathVariable Long postId, @Valid @ModelAttribute PostUpdateRequest postUpdateRequest) {
+    PostResponse post = postService.update(postId, postUpdateRequest);
     return ResponseEntity.status(HttpStatus.OK).body(post);
   }
 

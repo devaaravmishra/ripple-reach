@@ -35,7 +35,7 @@ public class CommentServiceImpl implements CommentService {
   public CommentResponse createComment(Long postId, Long userId, String content) {
     try {
       Post post = postService.getPostById(postId);
-      User user = userService.findById(userId);
+      User user = userService.getUserById(userId);
 
       User currentUser = authService.getCurrentUser();
 

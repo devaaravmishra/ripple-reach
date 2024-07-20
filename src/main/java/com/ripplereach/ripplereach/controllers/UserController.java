@@ -3,7 +3,6 @@ package com.ripplereach.ripplereach.controllers;
 import com.ripplereach.ripplereach.dtos.UserPartialUpdateRequest;
 import com.ripplereach.ripplereach.dtos.UserResponse;
 import com.ripplereach.ripplereach.dtos.UserUpdateRequest;
-import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.mappers.UserMapper;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.services.UserService;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
   private final UserService userService;
   private final UserMapper userMapper;
-  private final Mapper<User, UserResponse> userResponseMapper;
 
   @GetMapping("/generate-usernames")
   @Operation(summary = "Generate Usernames", description = "Generate a list of random usernames.")
@@ -49,8 +47,7 @@ public class UserController {
   @SecurityRequirement(name = "Bearer Authentication")
   @Operation(summary = "Get User by Username", description = "Retrieves a user by their username.")
   public ResponseEntity<UserResponse> getUser(@PathVariable String username) {
-    User userEntity = userService.findByUsername(username);
-    UserResponse userResponse = userResponseMapper.mapTo(userEntity);
+    UserResponse userResponse = userService.findByUsername(username);
 
     return new ResponseEntity<>(userResponse, HttpStatus.OK);
   }
@@ -61,9 +58,8 @@ public class UserController {
   public ResponseEntity<UserResponse> updateUser(
       @PathVariable Long userId, @Valid @RequestBody UserUpdateRequest userUpdateRequest) {
     User userEntity = userMapper.mapToUser(userUpdateRequest);
-    User userResponseEntity = userService.update(userId, userEntity);
+    UserResponse userResponse = userService.update(userId, userEntity);
 
-    UserResponse userResponse = userResponseMapper.mapTo(userResponseEntity);
     return ResponseEntity.status(HttpStatus.OK).body(userResponse);
   }
 
@@ -75,9 +71,8 @@ public class UserController {
   public ResponseEntity<UserResponse> partialUpdateUser(
       @PathVariable Long userId, @RequestBody UserPartialUpdateRequest userPartialUpdateRequest) {
     User userEntity = userMapper.mapToUser(userPartialUpdateRequest);
-    User userResponseEntity = userService.partialUpdate(userId, userEntity);
+    UserResponse userResponse = userService.partialUpdate(userId, userEntity);
 
-    UserResponse userResponse = userResponseMapper.mapTo(userResponseEntity);
     return ResponseEntity.status(HttpStatus.OK).body(userResponse);
   }
 

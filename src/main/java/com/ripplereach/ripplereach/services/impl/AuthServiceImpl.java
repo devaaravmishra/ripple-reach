@@ -1,5 +1,6 @@
 package com.ripplereach.ripplereach.services.impl;
 
+import com.ripplereach.ripplereach.constants.Messages;
 import com.ripplereach.ripplereach.dtos.*;
 import com.ripplereach.ripplereach.exceptions.RippleReachException;
 import com.ripplereach.ripplereach.mappers.Mapper;
@@ -37,21 +38,28 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   @Transactional
-  public User register(User user) {
-    return userService.create(user);
+  public RegisterResponse register(User user) {
+    UserResponse userResponse = userService.create(user);
+
+    User UserEntity = userResponseMapper.mapFrom(userResponse);
+    AuthResponse authResponse = generateAuthenticationToken(UserEntity);
+
+    return RegisterResponse.builder()
+        .message(Messages.USER_CREATED_SUCCESSFULLY)
+        .user(userResponse)
+        .auth(authResponse)
+        .build();
   }
 
   @Override
   @Transactional
   public LoginResponse login(LoginRequest loginRequest) {
-    User userEntity = userService.findByPhone(loginRequest.getPhone());
-    AuthResponse authResponse = generateAuthenticationToken(userEntity);
+    UserResponse userResponse = userService.findByPhone(loginRequest.getPhone());
 
-    return LoginResponse.builder()
-        .message("Success")
-        .user(userResponseMapper.mapTo(userEntity))
-        .auth(authResponse)
-        .build();
+    User UserEntity = userResponseMapper.mapFrom(userResponse);
+    AuthResponse authResponse = generateAuthenticationToken(UserEntity);
+
+    return LoginResponse.builder().message("Success").user(userResponse).auth(authResponse).build();
   }
 
   @Override
@@ -109,7 +117,7 @@ public class AuthServiceImpl implements AuthService {
   public User getCurrentUser() {
     try {
       Authentication authentication = getAuthentication();
-      return userService.findByPhone(authentication.getName());
+      return userService.getUserByPhone(authentication.getName());
     } catch (EntityNotFoundException ex) {
       throw ex;
     } catch (RuntimeException ex) {
@@ -133,8 +141,8 @@ public class AuthServiceImpl implements AuthService {
 
       User existingUser =
           username.isEmpty()
-              ? userService.findByPhone(getAuthenticatedUser().getName())
-              : userService.findByUsername(username);
+              ? userService.getUserByPhone(getAuthenticatedUser().getName())
+              : userService.getUserByUsername(username);
 
       return generateAuthenticationToken(existingUser);
     } catch (EntityNotFoundException ex) {

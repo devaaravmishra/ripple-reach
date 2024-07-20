@@ -2,7 +2,6 @@ package com.ripplereach.ripplereach.controllers;
 
 import com.ripplereach.ripplereach.constants.Messages;
 import com.ripplereach.ripplereach.dtos.*;
-import com.ripplereach.ripplereach.mappers.Mapper;
 import com.ripplereach.ripplereach.mappers.UserMapper;
 import com.ripplereach.ripplereach.models.User;
 import com.ripplereach.ripplereach.services.AuthService;
@@ -30,7 +29,6 @@ public class AuthController {
 
   private final AuthService authService;
   private final UserMapper userMapper;
-  private final Mapper<User, UserResponse> userResponseMapper;
 
   @PostMapping("/register")
   @Operation(
@@ -41,15 +39,7 @@ public class AuthController {
     authService.verifyIdToken(registerRequest.getIdToken());
     User userRequestEntity = userMapper.mapToUser(registerRequest);
 
-    User userResponseEntity = authService.register(userRequestEntity);
-    AuthResponse authResponse = authService.generateAuthenticationToken(userResponseEntity);
-
-    RegisterResponse registerResponse =
-        RegisterResponse.builder()
-            .message(Messages.USER_CREATED_SUCCESSFULLY)
-            .user(userResponseMapper.mapTo(userResponseEntity))
-            .auth(authResponse)
-            .build();
+    RegisterResponse registerResponse = authService.register(userRequestEntity);
 
     return new ResponseEntity<>(registerResponse, HttpStatus.OK);
   }
@@ -59,7 +49,7 @@ public class AuthController {
       summary = "User Login",
       description = "API which lets a user log in with their credentials.")
   public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-    //    authService.verifyIdToken(loginRequest.getIdToken());
+    authService.verifyIdToken(loginRequest.getIdToken());
     LoginResponse loginResponse = authService.login(loginRequest);
 
     return new ResponseEntity<>(loginResponse, HttpStatus.OK);

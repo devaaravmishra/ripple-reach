@@ -1,24 +1,31 @@
 package com.ripplereach.ripplereach.services;
 
+import com.ripplereach.ripplereach.dtos.UserResponse;
 import com.ripplereach.ripplereach.models.User;
 import java.util.Set;
 
 public interface UserService {
-  User findByUsername(String username);
+  UserResponse findByUsername(String username);
 
   boolean existsByUsername(String username);
 
   Set<String> findExistingUsernames(Set<String> usernames);
 
-  User findByPhone(String phone);
+  UserResponse findByPhone(String phone);
 
-  User create(User user);
+  UserResponse create(User user);
 
-  User findById(Long userId);
+  UserResponse findById(Long userId);
 
-  User update(Long userId, User user);
+  UserResponse update(Long userId, User user);
 
-  User partialUpdate(Long id, User user);
+  UserResponse partialUpdate(Long id, User user);
+
+  User getUserByPhone(String phone);
+
+  User getUserByUsername(String username);
+
+  User getUserById(Long id);
 
   void deleteByUsername(String username, boolean hardDelete);
 
