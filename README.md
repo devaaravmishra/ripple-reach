@@ -20,13 +20,13 @@ This project is currently **under active development**. Since this is my side pr
 
 ### 📖 **Table of Contents**
 
--   [Overview](#overview)
--   [Objective](#objective)
--   [Core Features](#core-features)
--   [Technology Stack](#technology-stack)
--   [Project Structure](#project-structure)
--   [Contributing](#contributing)
--   [License](#license)
+-   [Overview](#-overview)
+-   [Objective](#-objective)
+-   [Core Features](#-core-features)
+-   [Technology Stack](#-technology-stack)
+-   [Project Structure](#-project-structure)
+-   [Contributing](#-contributing)
+-   [License](#-license)
 
 ---
 
